@@ -113,5 +113,46 @@ Mouse and keyboard interaction can be achieved by simply implementing the variou
 mouse and keyboard event routines:
 
 mouseDown, mouseUp, mouseMove
-
 keyDown, keyUp, keyPress
+
+These routines each receive an 'activity' argument, which contains the 
+details of what the event was.
+
+mouseDown
+    Mouse Button Pressed, called whenever a button is pressed.
+
+     {action='mouseDown', x, y, which};
+     x - horizontal location of mouse
+     y - vertical location of mouse
+     which - which mouse button (1: left, 2:right, 3:middle)
+
+mouseUp
+	Mouse Button Released, called whenever a pressed button
+	is released.
+
+    {action='mouseUp', x, y, which};
+    x - horizontal location of mouse
+    y - vertical location of mouse
+    which - which mouse button (1: left, 2:right, 3:middle)
+
+mouseMove(activity)
+	Mouse Movement, called any time the mouse moves
+
+    {action='mouseMove', x, y};
+    x - horizontal location of mouse
+    y - vertical location of mouse
+
+
+Installation
+------------
+
+remotesvg relies on turbo lua (https://turbo.readthedocs.org/en/latest/) as a web server.  You need to first install that before trying to run
+your application:
+
+luarocks install turbo
+
+Then, assuming you're sitting in the 'examples' directory of remotesvg, 
+you can simply execute your file:
+
+luajit myapp.lua
+
