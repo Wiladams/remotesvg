@@ -1,36 +1,65 @@
 --[[
---]]
+	SVGElem
 
-local Document = {}
-setmetatable(Document, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-local Document_mt = {
-	__index = Document;
+	A base type for all other SVG Elements.
+	This can do the basic writing
+--]]
+local BasicElem = {}
+local BasicElem_mt = {
+	__index = BasicElem;
 }
 
-function Document.init(self, params)
+function BasicElem.new(self, kind, params)
 	local obj = params or {}
-	--obj.Shapes = obj.Shapes or {}
-	obj.xmlns = obj.xmlns or 'http://www.w3.org/2000/svg';
-
-	setmetatable(obj, Document_mt);
+	setmetatable(obj, BasicElem_mt);
 
 	return obj;
 end
 
-function Document.new(self, ...)
+function BasicElem.write(self, strm)
+	strm:openElement(self._kind);
+
+	for name, value in pairs(self) do
+		if type(value) ~= "table" and
+			name ~= "_kind" then
+			strm:addAttribute(name, tostring(value));
+		end
+	end
+
+	strm:closeElement();
+end
+
+--[[
+	SVG
+--]]
+local SVG = {}
+setmetatable(SVG, {
+	__call = function(self, ...)
+		return self:new(...);
+	end,
+	})
+local SVG_mt = {
+	__index = SVG;
+}
+
+function SVG.init(self, params)
+	local obj = params or {}
+	obj.xmlns = obj.xmlns or 'http://www.w3.org/2000/svg';
+
+	setmetatable(obj, SVG_mt);
+
+	return obj;
+end
+
+function SVG.new(self, ...)
 	return self:init(...)
 end
 
-function Document.addShape(self, shape)
+function SVG.addShape(self, shape)
 	table.insert(self, shape);
 end
 
-function Document.write(self, strm)
-	strm:write('<?xml version="1.0" standalone="no"?>\n');
+function SVG.write(self, strm)
 
 	strm:openElement("svg");
 	for name, value in pairs(self) do
@@ -217,6 +246,8 @@ end
 --]]
 local Circle = {}
 setmetatable(Circle, {
+	__index = BasicElem;
+
 	__call = function(self, ...)
 		return self:new(...);
 	end,
@@ -228,6 +259,7 @@ local Circle_mt = {
 
 function Circle.init(self, params)
 	local obj = params or {}
+	obj._kind = "circle";
 	setmetatable(obj, Circle_mt);
 
 	return obj;
@@ -237,6 +269,7 @@ function Circle.new(self, params)
 	return self:init(params);
 end
 
+--[[
 -- write ourself out as an SVG string
 function Circle.write(self, strm)
 	strm:openElement("circle")
@@ -246,11 +279,14 @@ function Circle.write(self, strm)
 
 	strm:closeElement();
 end
+--]]
 
 --[[
 --]]
 local Ellipse = {}
 setmetatable(Ellipse, {
+	__index = BasicElem;
+
 	__call = function(self, ...)
 		return self:new(...);
 	end,
@@ -262,6 +298,7 @@ local Ellipse_mt = {
 
 function Ellipse.init(self, params)
 	local obj = params or {}
+	obj._kind = "ellipse";
 	setmetatable(obj, Ellipse_mt);
 
 	return obj;
@@ -271,6 +308,7 @@ function Ellipse.new(self, params)
 	return self:init(params);
 end
 
+--[[
 -- write ourself out as an SVG string
 function Ellipse.write(self, strm)
 	strm:openElement("ellipse")
@@ -280,7 +318,7 @@ function Ellipse.write(self, strm)
 
 	strm:closeElement();
 end
-
+--]]
 
 --[[
 	Line
@@ -293,6 +331,8 @@ end
 --]]
 local Line = {}
 setmetatable(Line, {
+	__index = BasicElem;
+
 	__call = function(self, ...)
 		return self:new(...);
 	end,
@@ -304,6 +344,7 @@ local Line_mt = {
 
 function Line.init(self, params)
 	local obj = params or {}
+	obj._kind = "line";
 	setmetatable(obj, Line_mt);
 
 	return obj;
@@ -313,6 +354,7 @@ function Line.new(self, params)
 	return self:init(params);
 end
 
+--[[
 -- write ourself out as an SVG string
 function Line.write(self, strm)
 	strm:openElement("line")
@@ -322,6 +364,7 @@ function Line.write(self, strm)
 
 	strm:closeElement();
 end
+--]]
 
 --[[
 	Polygon
@@ -435,6 +478,8 @@ end
 --]]
 local Rect={}
 setmetatable(Rect, {
+	__index = BasicElem;
+
 	__call = function(self, ...)
 		return self:new(...);
 	end,
@@ -445,6 +490,7 @@ local Rect_mt = {
 
 function Rect.init(self, params)
 	local obj = params or {}
+	obj._kind = "rect";
 	setmetatable(obj, Rect_mt)
 
 	obj.x = obj.x or 0;
@@ -461,6 +507,7 @@ function Rect.new(self, params)
 	return self:init(params)
 end
 
+--[[
 -- write ourself out as an SVG string
 function Rect.write(self, strm)
 	strm:openElement("rect")
@@ -473,7 +520,7 @@ function Rect.write(self, strm)
 
 	strm:closeElement();
 end
-
+--]]
 
 --[[
 	Text
@@ -560,7 +607,7 @@ end
 	Interface exposed to outside world
 --]]
 return {
-	Document = Document;		-- check
+	SVG = SVG;		-- check
 	Definitions = Definitions;	-- check
 	Group = Group;				-- check
 	Stroke = Stroke;

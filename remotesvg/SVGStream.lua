@@ -27,15 +27,13 @@ end
 
 
 function SVGStream.reset(self)
+	--strm:write('<?xml version="1.0" standalone="no"?>\n');
+
 	return self.BaseStream:reset();
 end
 
 
 function SVGStream.openElement(self, elName)
-	--if self.CurrentOpenTag then
-	--	self:closeTag();
-	--end
-
 	self.CurrentOpenTag = elName;
 	self.BaseStream:writeString("<"..elName)
 end

@@ -19,14 +19,13 @@ return [[
           Authority = '<?authority?>'
           HttpBase = '<?httpbase?>'
           WebSocketBase = '<?websocketbase?>'
-          //HostIp = '<?hostip?>'
-          //ServicePort = <?serviceport?>
 
 
       function eventWindowLoaded()
       {
         document.getElementById("screendiv").focus();
         
+
         // Capture the image once every few milliseconds
         setInterval("refreshImage()", FrameInterval); 
 
@@ -35,19 +34,20 @@ return [[
       
       function setupWebsocket()
       {
-        //var uioUri = WebSocketBase + 'ws/'+Authority+'/uiosocket'
         var uioUri = WebSocketBase + 'ws/uiosocket'
         
         this.uioSocket = new WebSocket(uioUri); 
-        //this.ws.onerror = ...;
-        //this.ws.onopen = ...;
-        //this.ws.onmessage = ...;
+        //this.uioSocket.onerror = ...;
+        //this.uioSocket.onopen = ...;
+        //this.uioSocket.onmessage = ...;
         
         // If the socket closes, try to reopen
         // it every second
         this.uioSocket.onclose = function(){
           setTimeout(setupWebSocket, 1000);
         };
+
+        //document.getElementById("screendiv").addEventListener('onmousemove', HandleMouseMove, false);
       }
 
 			function refreshImage() 
@@ -62,13 +62,23 @@ return [[
 
    				document.images['myScreen'].src = asrc;
 			}
+
+      function HandleMouseMove(e)
+      {      
+        var x = map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
+        var y = map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
+
+        this.uioSocket.send("{action='mouseMove';x="+x+";y="+y+"}");
+      }
+
 		</script>
 	</head>
 
 	<body style="margin:0px">
     	<div id="screendiv" tabindex="-1" 
     		style="width:" + ImageWidth + "px; height:"+ImageHeight+"px; margin: 0px 0px 0px 0px; background:yellow; border:0px; groove;"
-        onselectstart="return false" >
+        onselectstart="return false">
+
 			<img src="/grab.svg" name="myScreen">
 		</div>
 	</body>
@@ -80,7 +90,6 @@ return [[
 		}
 		
 		$("#screendiv").keydown(function(e){
-      		//uioSocket.send("{action='keydown';which="+e.which+"}");
           uioSocket.send("{action='keyDown';keyCode="+e.keyCode+"}");
 		});
 
@@ -106,12 +115,14 @@ return [[
       uioSocket.send("{action='mouseUp';which="+e.which+";x="+x+";y="+y+"}");
 		});
 
+
  		$("#screendiv").mousemove(function(e){			
 			var x = map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
 			var y = map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
 
-      		uioSocket.send("{action='mouseMove';x="+x+";y="+y+"}");
+      uioSocket.send("{action='mouseMove';x="+x+";y="+y+"}");
  		});
+
 	</script>
 </html>
 ]]
