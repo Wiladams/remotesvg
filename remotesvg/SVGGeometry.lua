@@ -269,17 +269,6 @@ function Circle.new(self, params)
 	return self:init(params);
 end
 
---[[
--- write ourself out as an SVG string
-function Circle.write(self, strm)
-	strm:openElement("circle")
-	for name, value in pairs(self) do
-			strm:addAttribute(name, tostring(value));
-	end
-
-	strm:closeElement();
-end
---]]
 
 --[[
 --]]
@@ -308,17 +297,7 @@ function Ellipse.new(self, params)
 	return self:init(params);
 end
 
---[[
--- write ourself out as an SVG string
-function Ellipse.write(self, strm)
-	strm:openElement("ellipse")
-	for name, value in pairs(self) do
-			strm:addAttribute(name, tostring(value));
-	end
 
-	strm:closeElement();
-end
---]]
 
 --[[
 	Line
@@ -355,16 +334,60 @@ function Line.new(self, params)
 end
 
 --[[
--- write ourself out as an SVG string
-function Line.write(self, strm)
-	strm:openElement("line")
+--]]
+local Path = {}
+setmetatable(Path, {
+	--__index = BasicElem;	-- inheritance
+
+	__call = function(self, ...)	-- functor
+		return self:new(...);
+	end,
+})
+
+function Path.new(self, params)
+	local obj = params or {}
+	obj._kind = "path";
+	obj.Commands = {};
+
+	local meta = {
+		__index = Path;
+		Commands = {};
+	}
+	setmetatable(obj, meta);
+
+	return obj;
+end
+
+function Path.addCommand(cmd)
+	table.insert(self.Commands, cmd);
+end
+
+function Path.moveTo(self, x, y)
+	addCommand({'M', x,y})
+end
+
+function Path.write(self, strm)
+	strm:openElement("path")
 	for name, value in pairs(self) do
+		if type(value) == "string" or
+			type(value) == "number" then
 			strm:addAttribute(name, tostring(value));
+		end
+	end
+
+	-- write out the points
+	if #self.points > 0 then
+		local tbl = {};
+		for _, pt in ipairs(self.points) do
+			table.insert(tbl, string.format(" %d,%d", pt[1], pt[2]))
+		end
+		local pointsValue = table.concat(tbl, ' ');
+--print("pointsValue: ", pointsValue)
+		strm:addAttribute("points", pointsValue);
 	end
 
 	strm:closeElement();
 end
---]]
 
 --[[
 	Polygon
@@ -507,20 +530,7 @@ function Rect.new(self, params)
 	return self:init(params)
 end
 
---[[
--- write ourself out as an SVG string
-function Rect.write(self, strm)
-	strm:openElement("rect")
-	for name, value in pairs(self) do
-		--if type(value) == "string" or
-		--	type(value) == "number" then
-			strm:addAttribute(name, tostring(value));
-		--end
-	end
 
-	strm:closeElement();
-end
---]]
 
 --[[
 	Text

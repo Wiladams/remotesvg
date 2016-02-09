@@ -15,7 +15,7 @@ local LoopInterval = 1000 / 4;
 local LoopIntervalRef = nil;
 
 
-local FrameInterval = 1000/4;
+local FrameInterval = 1000;
 local ImageBitCount = 32;
 local ScreenWidth = nil;
 local ScreenHeight = nil;
@@ -100,7 +100,7 @@ local startupContent = nil;
 local function loadStartupContent(self)
 
     -- load the file into memory
-    local content = require("remotesvg.sharesvg_htm")
+    local content = require("remotesvg.viewsvg_htm")
 
     -- perform the substitution of values
     -- assume content looks like this:
