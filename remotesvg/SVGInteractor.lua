@@ -198,7 +198,7 @@ end
 
 
 -- uncomment if you want to turn off success messages
-turbo.log.categories.success = false;
+--turbo.log.categories.success = false;
 
 
 local app = nil;
