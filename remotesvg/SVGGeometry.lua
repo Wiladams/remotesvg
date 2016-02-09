@@ -337,34 +337,111 @@ end
 --]]
 local Path = {}
 setmetatable(Path, {
-	--__index = BasicElem;	-- inheritance
-
-	__call = function(self, ...)	-- functor
-		return self:new(...);
-	end,
+    __call = function(self, ...)    -- functor
+        return self:new(...);
+    end,
 })
 
 function Path.new(self, params)
-	local obj = params or {}
-	obj._kind = "path";
-	obj.Commands = {};
+    local obj = params or {}
+    obj._kind = "path";
 
-	local meta = {
-		__index = Path;
-		Commands = {};
-	}
-	setmetatable(obj, meta);
+    local meta = {
+        __index = Path;
+        Commands = {};
+    }
+    setmetatable(obj, meta);
 
-	return obj;
+    return obj;
 end
 
-function Path.addCommand(cmd)
-	table.insert(self.Commands, cmd);
+function Path.addCommand(self, ins, ...)
+    local tbl = getmetatable(self);
+    local commands = tbl.Commands;
+
+    -- construct the new instruction
+    local res = {}
+    table.insert(res,tostring(ins))
+    local coords = {...};
+    for _, value in ipairs(coords) do
+        table.insert(res, string.format("%d",tonumber(value)))
+    end
+
+    table.insert(commands, table.concat(res, ' '));
 end
 
+function Path.pathToString(self)
+    local tbl = getmetatable(self);
+    local commands = tbl.Commands;
+
+    return table.concat(commands);
+end
+
+-- Path construction commands
+-- add a single arc segment
+function Path.arcBy(self, rx, ry, rotation, large, sweep, x, y)
+    self:addCommand('a', rx, ry, rotation, large, sweep, x, y)
+    return self
+end
+
+function Path.arcTo(self, rx, ry, rotation, large, sweep, x, y)
+    self:addCommand('A', rx, ry, rotation, large, sweep, x, y)
+    return self
+end
+
+function Path.close(self)
+    self:addCommand('z')
+    return self;
+end
+
+function Path.cubicBezierTo(self, ...)
+    self:addCommand('C', ...)
+    return self
+end
+
+function Path.quadraticBezierTo(self, ...)
+    self:addCommand('Q', ...)
+    return self
+end
+
+function Path.hLineBy(self, x, y)
+    self:addCommand('h', x, y)
+    return self
+end
+
+function Path.hLineTo(self, x, y)
+    self:addCommand('H', x, y)
+    return self
+end
+
+function Path.lineBy(self, x,y)
+    self:addCommand('l', x, y)
+    return self
+end
+
+function Path.lineTo(self, x,y)
+    self:addCommand('L', x, y)
+    return self
+end
+
+function Path.moveBy(self, x, y)
+    self:addCommand('m', x,y)
+    return self
+end
 function Path.moveTo(self, x, y)
-	addCommand({'M', x,y})
+    self:addCommand('M', x,y)
+    return self
 end
+
+function Path.vLineBy(self, x, y)
+    self:addCommand('v', x, y)
+    return self
+end
+function Path.vLineTo(self, x, y)
+    self:addCommand('V', x, y)
+    return self
+end
+
 
 function Path.write(self, strm)
 	strm:openElement("path")
@@ -375,15 +452,9 @@ function Path.write(self, strm)
 		end
 	end
 
-	-- write out the points
-	if #self.points > 0 then
-		local tbl = {};
-		for _, pt in ipairs(self.points) do
-			table.insert(tbl, string.format(" %d,%d", pt[1], pt[2]))
-		end
-		local pointsValue = table.concat(tbl, ' ');
---print("pointsValue: ", pointsValue)
-		strm:addAttribute("points", pointsValue);
+	-- write out the instructions
+	if not self.d then
+		strm:addAttribute("d", self:pathToString())
 	end
 
 	strm:closeElement();

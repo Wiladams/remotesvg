@@ -37,12 +37,6 @@ local function draw(strm)
 		fill = "none";
 		stroke = "blue";
 		["stroke-width"] = 2;
-
-		--style = Style({
-		--	["fill"] = "rgb(0,0,255)";
-		--	["stroke-width"] = "3";
-		--	["stroke"] = "rgb(0,0,0)";
-		--});
 	});
 
    local l1 = line({x1=100, y1=300, x2=300, y2=100, stroke = "green", ["stroke-width"]=5});

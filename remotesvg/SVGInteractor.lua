@@ -11,11 +11,11 @@ local MemoryStream = require("remotesvg.memorystream")
 --]]
 local serviceport = tonumber(arg[1]) or 8080
 local ioinstance = nil;
-local LoopInterval = 1000 / 4;
+local LoopInterval = 1000;
 local LoopIntervalRef = nil;
 
 
-local FrameInterval = 1000;
+local FrameInterval = 2000;
 local ImageBitCount = 32;
 local ScreenWidth = nil;
 local ScreenHeight = nil;
@@ -24,6 +24,10 @@ local captureHeight = nil;
 
 local mstream = nil;
 
+function UIframeInterval(newInterval)
+  FrameInterval = newInterval or 1000;
+end
+
 --[[
     From within your application, call 'loopInterval(frameTime)'
     to specify the interval between frames.  You can call this 
@@ -31,7 +35,7 @@ local mstream = nil;
 
     It governs how often your 'frame()' function will be called.
 --]]
-function loopInterval(newInterval)
+function appFrameInterval(newInterval)
 
   -- cancel the last interval
   if ioinstance then
@@ -193,6 +197,9 @@ end
 local function onInterval(ioinstance)
   if frame then
     frame()
+
+    -- create a fresh new memorystream
+    -- dump the older one
   end
 end
 
