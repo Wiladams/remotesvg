@@ -7,7 +7,7 @@ return [[
 		<script language="javascript" type="text/javascript">
 			window.addEventListener('load', eventWindowLoaded, false);
 
-      FrameInterval = <?frameinterval?>
+      PageInterval = <?pageinterval?>;
 
       // image used to handle async downloads
       var downloadingImage = new Image();
@@ -18,7 +18,7 @@ return [[
       function eventWindowLoaded()
       {
         // Capture the image once every few milliseconds
-        setInterval("refreshImage()", FrameInterval); 
+        //setInterval("refreshImage()", FrameInterval); 
       }
       
 			function refreshImage() 

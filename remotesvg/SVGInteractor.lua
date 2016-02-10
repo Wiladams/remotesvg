@@ -3,19 +3,19 @@ _G.TURBO_SSL = true -- SSL must be enabled for WebSocket support!
 local ffi = require("ffi")
 local turbo = require("turbo")
 
---local DrawingContext = require("tflremote.DrawingContext")
 local MemoryStream = require("remotesvg.memorystream")
+local SVGStream = require("remotesvg.SVGStream")
 
 --[[
   Application Variables
 --]]
 local serviceport = tonumber(arg[1]) or 8080
 local ioinstance = nil;
-local LoopInterval = 1000;
-local LoopIntervalRef = nil;
+local FrameInterval = 1000;
+local FrameIntervalRef = nil;
 
 
-local FrameInterval = 2000;
+local PageInterval = 2000;
 local ImageBitCount = 32;
 local ScreenWidth = nil;
 local ScreenHeight = nil;
@@ -23,36 +23,58 @@ local captureWidth = nil;
 local captureHeight = nil;
 
 local mstream = nil;
+local ImageStream = nil;
 
-function UIframeInterval(newInterval)
-  FrameInterval = newInterval or 1000;
+
+--[[
+    pageInterval
+
+    Set the number of milliseconds between page loads.  This
+    value is embedded in the .htm file that the client downloads
+    initially, so it should be called before 'run()'.
+--]]
+function pageInterval(newInterval)
+  PageInterval = newInterval or 1000;
 end
 
 --[[
-    From within your application, call 'loopInterval(frameTime)'
+    frameInterval
+
+    Determines how frequently your 'frame()' function is called,
+    if you choose to implement one.
+
+    From within your application, call 'frameInterval(frameTime)'
     to specify the interval between frames.  You can call this 
     at any time.
-
-    It governs how often your 'frame()' function will be called.
 --]]
-function appFrameInterval(newInterval)
+function frameInterval(newInterval)
 
   -- cancel the last interval
   if ioinstance then
-    ioinstance:clear_interval(LoopIntervalRef);
+    ioinstance:clear_interval(FrameIntervalRef);
   end
 
-  LoopInterval = newInterval;
+  FrameInterval = newInterval;
   
   if ioinstance then
-    LoopIntervalRef = ioinstance:set_interval(LoopInterval, onInterval, ioinstance)
+    FrameIntervalRef = ioinstance:set_interval(FrameInterval, onInterval, ioinstance)
   end
 end
 
 
-function size(width, height)
-  ScreenWidth = width;
-  ScreenHeight = height;
+--[[
+    size
+
+    Called initially by your application to get a handle
+    on the stream your image is written into.
+
+    params can contain 'width' and 'height' as hints as to 
+    how large the image is going to be.  This will also be
+    embedded in the .htm file the client loads.
+--]]
+function size(params)
+  ScreenWidth = params.width or 0;
+  ScreenHeight = params.height or 0;
 
   captureWidth = ScreenWidth;
   captureHeight = ScreenHeight;
@@ -64,8 +86,9 @@ function size(width, height)
   -- 1Mb should be good enough for most
   -- images
   mstream = MemoryStream:new(1024*1024);
+  ImageStream = SVGStream(mstream);
 
-  return mstream;
+  return ImageStream;
 end
 
 
@@ -117,7 +140,7 @@ local function loadStartupContent(self)
       ["websocketbase"] = "ws://"..self.request.host..'/',
       ["serviceport"]   = serviceport,
 
-      ["frameinterval"] = FrameInterval,
+      ["pageinterval"] = PageInterval,
       ["capturewidth"]  = captureWidth,
       ["captureheight"] = captureHeight,
       ["imagewidth"]    = ImageWidth,
@@ -222,7 +245,7 @@ function run()
   app:listen(serviceport)
   ioinstance = turbo.ioloop.instance()
   
-  loopIntervalRef = ioinstance:set_interval(LoopInterval, onInterval, ioinstance)
+  FrameIntervalRef = ioinstance:set_interval(FrameInterval, onInterval, ioinstance)
   --ioinstance:add_callback(onLoop, ioinstance)
 
   ioinstance:start()

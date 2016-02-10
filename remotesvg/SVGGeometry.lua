@@ -693,6 +693,9 @@ return {
 	Group = Group;				-- check
 	Stroke = Stroke;
 	Fill = Fill;
+	LinearGradient = LinearGradient;
+	RadialGradient = RadialGradient;
+	Stop = Stop;
 
 	Circle = Circle;			-- check
 	Ellipse = Ellipse;			-- check
@@ -708,5 +711,5 @@ return {
 	TextPath = TextPath;
 	TRef = TRef;
 	TSpan = TSpan;
-	Use = Use;
+	Use = Use;					-- check
 }
