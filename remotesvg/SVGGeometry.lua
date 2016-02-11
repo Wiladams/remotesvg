@@ -93,29 +93,6 @@ local function SVG(params)
 	return elem;
 end
 
---[[
-	Definitions
---]]
-local function Definitions(params)
-	return BasicElem('defs', params);
-end
-
-
---[[
-	Group
-
-	A group is like a document in that it is a container, 
-	but it is not the top level container.  Various 
-	attributes, such as style and transform that are
-	set at this level will be inherited by the various children.
-
-	Children are specified by putting them in the "Shapes" table.
---]]
-local Group = function(params)
-	return BasicElem('g', params)
-end
-
-
 
 --[[
 	Style
@@ -163,39 +140,6 @@ function Style.writeAttribute(self, name, value)
 end
 
 
---[[
-	Actual Geometry Elements
---]]
---[[
-	Circle
-	cx - center x
-	cy - center y
-	r - radius
---]]
-local function Circle(params)
-	return BasicElem('circle', params)
-end
-
-
-local function Ellipse(params)
-	return BasicElem('ellipse', params)
-end
-
-
---[[
-	Gradients
---]]
-local function LinearGradient(params)
-	return BasicElem('linearGradient', params)
-end
-
-local function RadialGradient(params)
-	return BasicElem('radialGradient', params)
-end
-
-local function Stop(params)
-	return BasicElem('stop', params)
-end
 
 --[[
 	Literal
@@ -230,22 +174,6 @@ function Literal.write(self, strm)
 end
 
 
---[[
-	Line
-
-	x1
-	y1
-	x2
-	y2
-
---]]
-local function Line(params)
-	return BasicElem('line', params)
-end
-
-local function Marker(params)
-	return BasicElem('marker', params)
-end
 
 --[[
 --]]
@@ -498,17 +426,6 @@ function PolyLine.write(self, strm)
 	strm:closeElement();
 end
 
---[[
-	Rect
-	x - left
-	y - top
-	width - how wide
-	height - how tall
---]]
-local function Rect(params)
-	return BasicElem('rect', params)
-end
-
 
 
 --[[
@@ -557,42 +474,114 @@ end
 
 
 --[[
---]]
-local function Use(params)
-	return BasicElem('use', params);
-end
-
-
-
---[[
 	Interface exposed to outside world
+
+	Reference of SVG Elements
+	https://developer.mozilla.org/en-US/docs/Web/SVG/Element
 --]]
 local exports = {
-	svg = SVG;		-- check
-	defs = Definitions;	-- check
-	g = Group;				-- check
-	stroke = Stroke;
-	fill = Fill;
+	-- Animation Elements
+	animate = function(params) return BasicElem('animate', params) end;
+	animateColor = function(params) return BasicElem('animateColor', params) end;
+	animateMotion = function(params) return BasicElem('animateMotion', params) end;
+	animateTransform = function(params) return BasicElem('animateTransform', params) end;
+	mpath = function(params) return BasicElem('mpath', params) end;
+	set = function(params) return BasicElem('set', params) end;
 
-	circle = Circle;			-- check
-	ellipse = Ellipse;			-- check
-	image = Image;
-	line = Line;				-- check
-	linearGradient = LinearGradient;	-- check
-	literal = Literal;			-- check
-	marker = Marker;			-- check
-	polygon = Polygon;			-- check
-	polyLine = PolyLine;		-- check
-	radialGradient = RadialGradient;	-- check
+	-- Container elements
+	a = function(params) return BasicElem('a', params) end;
+	defs = function(params) return BasicElem('defs', params) end;
+	glyph = function(params) return BasicElem('glyph', params) end;
+	g = function(params) return BasicElem('g', params) end;
+	marker = function(params) return BasicElem('marker', params) end;
+	mask = function(params) return BasicElem('mask', params) end;
+	missing_glyph = function(params) return BasicElem('missing-glyph', params) end;
+	pattern = function(params) return BasicElem('pattern', params) end;
+	svg = SVG;
+	switch = function(params) return BasicElem('switch', params) end;
+	symbol = function(params) return BasicElem('symbol', params) end;
+	use = function(params) return BasicElem('use', params) end;
+
+	-- Descriptive elements
+	desc = function(params) return BasicElem('desc', params) end;
+	metadata = function(params) return BasicElem('metadata', params) end;
+	title = function(params) return BasicElem('title', params) end;
+
+	-- Filter primitive elements
+	feBlend = function(params) return BasicElem('feBlend', params) end;
+	feColorMatrix = function(params) return BasicElem('feColorMatrix', params) end;
+	feComponentTransfer = function(params) return BasicElem('feComponentTransfer', params) end;
+	feComposite = function(params) return BasicElem('feComposite', params) end;
+	feConvolveMatrix = function(params) return BasicElem('feConvolveMatrix', params) end;
+	feDiffuseLighting = function(params) return BasicElem('feDiffuseLighting', params) end;
+	feDisplacementMap = function(params) return BasicElem('feDisplacementMap', params) end;
+	feFlood = function(params) return BasicElem('feFlood', params) end;
+	feFuncA = function(params) return BasicElem('feFuncA', params) end;
+	feFuncB = function(params) return BasicElem('feFuncB', params) end;
+	feFuncR = function(params) return BasicElem('feFuncR', params) end;
+	feGaussianBlur = function(params) return BasicElem('feGaussianBlur', params) end;
+	feImage = function(params) return BasicElem('feImage', params) end;
+	feMerge = function(params) return BasicElem('feMerge', params) end;
+	feMergeNode = function(params) return BasicElem('feMergeNode', params) end;
+	feOffset = function(params) return BasicElem('feOffset', params) end;
+	feSpecularLighting = function(params) return BasicElem('feSpecularLighting', params) end;
+	feTile = function(params) return BasicElem('feTile', params) end;
+	feTurbulance = function(params) return BasicElem('feTurbulance', params) end;
+
+	-- Font elements
+	font = function(params) return BasicElem('font', params) end;
+	font_face = function(params) return BasicElem('font-face', params) end;
+	font_face_format = function(params) return BasicElem('font-face-format', params) end;
+	font_face_name = function(params) return BasicElem('font-face-name', params) end;
+	font_face_src = function(params) return BasicElem('font-face-src', params) end;
+	font_face_uri = function(params) return BasicElem('font-face-uri', params) end;
+	hkern = function(params) return BasicElem('hkern', params) end;
+	vkern = function(params) return BasicElem('vkern', params) end;
+
+	-- Graphics elements
+	circle = function(params) return BasicElem('circle', params) end;
+	ellipse = function(params) return BasicElem('ellipse', params) end;
+	image = function(params) return BasicElem('image', params) end;
+	line = function(params) return BasicElem('line', params) end;
 	path = Path;				-- check
-	rect = Rect;				-- check
-	stop = Stop;				-- check
-	style = Style;				-- initial
+	polygon = Polygon;			-- check
+	polyline = PolyLine;		-- check
+	rect = function(params) return BasicElem('rect', params) end;
+
+	-- Gradient Elements
+	linearGradient = function(params) return BasicElem('linearGradient', params) end;
+	radialGradient = function(params) return BasicElem('radialGradient', params) end;
+	stop = function(params) return BasicElem('stop', params) end;				-- check
+
+	-- Light Source elements
+	feDistantLight = function(params) return BasicElem('feDistantLight', params) end;
+	fePointLight = function(params) return BasicElem('fePointLight', params) end;
+	feSpotLight = function(params) return BasicElem('feSpotLight', params) end;
+
+	-- Text Content elements
+	altGlyph = function(params) return BasicElem('altGlyph', params) end;
+	altGlyphDef = function(params) return BasicElem('altGlyphDef', params) end;
+	altGlyphItem = function(params) return BasicElem('altGlyphItem', params) end;
+	glyph = function(params) return BasicElem('glyph', params) end;
+	glyphRef = function(params) return BasicElem('glyphRef', params) end;
 	text = Text;				-- check
-	textPath = TextPath;
-	tRef = TRef;
-	tSpan = TSpan;
-	use = Use;					-- check
+	textPath = function(params) return BasicElem('textPath', params) end;
+	tref = function(params) return BasicElem('tref', params) end;
+	tspan = function(params) return BasicElem('tspan', params) end;
+
+	-- Uncategorized elements
+	clipPath = function(params) return BasicElem('clipPath', params) end;
+	color_profile = function(params) return BasicElem('color-profile', params) end;
+	cursor = function(params) return BasicElem('cursor', params) end;
+	filter = function(params) return BasicElem('filter', params) end;
+	foreignObject = function(params) return BasicElem('foreignObject', params) end;
+	script = function(params) return BasicElem('script', params) end;
+	style = Style;				-- initial
+	--style = function(params) return BasicElem('style', params) end;
+	view = function(params) return BasicElem('view', params) end;
+
+	-- one of our own
+	literal = Literal;
 }
 setmetatable(exports, {
 	__call = function(self, tbl)
