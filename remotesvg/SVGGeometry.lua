@@ -5,15 +5,40 @@
 	This can do the basic writing
 --]]
 local BasicElem = {}
+setmetatable(BasicElem, {
+	__call = function(self, ...)
+		return self:new(...);
+	end,
+})
 local BasicElem_mt = {
 	__index = BasicElem;
 }
 
 function BasicElem.new(self, kind, params)
 	local obj = params or {}
+	obj._kind = kind;
+
 	setmetatable(obj, BasicElem_mt);
 
 	return obj;
+end
+
+
+
+-- Add an attribute to ourself
+function BasicElem.attr(self, name, value)
+	self[name] = value;
+	return self;
+end
+
+-- Add a new child element
+function BasicElem.append(name)
+	-- based on the obj, find the right object
+	-- to represent it.
+	local child = BasicElem(name);
+	table.insert(self, child);
+
+	return child;
 end
 
 function BasicElem.write(self, strm)
@@ -28,6 +53,10 @@ function BasicElem.write(self, strm)
 
 	strm:closeElement();
 end
+
+--[[
+	BasicGroup
+--]]
 
 --[[
 	SVG
@@ -53,6 +82,13 @@ end
 
 function SVG.new(self, ...)
 	return self:init(...)
+end
+
+function SVG.append(self, kind, params)
+	local obj = BasicElem(kind, params)
+	table.insert(self, obj)
+
+	return obj;
 end
 
 function SVG.addShape(self, shape)
@@ -93,7 +129,6 @@ local Definitions_mt = {
 
 function Definitions.init(self, params)
 	local obj = params or {}
-	--obj.Shapes = obj.Shapes or {}
 
 	setmetatable(obj, Definitions_mt);
 
@@ -244,60 +279,15 @@ end
 	cy - center y
 	r - radius
 --]]
-local Circle = {}
-setmetatable(Circle, {
-	__index = BasicElem;
-
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-
-local Circle_mt = {
-	__index = Circle;
-}
-
-function Circle.init(self, params)
-	local obj = params or {}
-	obj._kind = "circle";
-	setmetatable(obj, Circle_mt);
-
-	return obj;
+local function Circle(params)
+	return BasicElem('circle', params)
 end
-
-function Circle.new(self, params)
-	return self:init(params);
-end
-
 
 --[[
 --]]
-local Ellipse = {}
-setmetatable(Ellipse, {
-	__index = BasicElem;
-
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-
-local Ellipse_mt = {
-	__index = Ellipse;
-}
-
-function Ellipse.init(self, params)
-	local obj = params or {}
-	obj._kind = "ellipse";
-	setmetatable(obj, Ellipse_mt);
-
-	return obj;
+local function Ellipse(params)
+	return BasicElem('ellipse', params)
 end
-
-function Ellipse.new(self, params)
-	return self:init(params);
-end
-
-
 
 --[[
 	Line
@@ -308,30 +298,11 @@ end
 	y2
 
 --]]
-local Line = {}
-setmetatable(Line, {
-	__index = BasicElem;
-
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-
-local Line_mt = {
-	__index = Line;
-}
-
-function Line.init(self, params)
-	local obj = params or {}
-	obj._kind = "line";
-	setmetatable(obj, Line_mt);
-
-	return obj;
+local function Line(params)
+	return BasicElem('line', params)
 end
 
-function Line.new(self, params)
-	return self:init(params);
-end
+
 
 --[[
 --]]
@@ -570,35 +541,8 @@ end
 	width - how wide
 	height - how tall
 --]]
-local Rect={}
-setmetatable(Rect, {
-	__index = BasicElem;
-
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-})
-local Rect_mt = {
-	__index = Rect;
-}
-
-function Rect.init(self, params)
-	local obj = params or {}
-	obj._kind = "rect";
-	setmetatable(obj, Rect_mt)
-
-	obj.x = obj.x or 0;
-	obj.y = obj.y or 0;
-	obj.width = obj.width or 0;
-	obj.height = obj.height or 0;
-	obj.rx = obj.rx or 0;
-	obj.ry = obj.rx or obj.rx;
-
-	return obj
-end
-
-function Rect.new(self, params)
-	return self:init(params)
+local function Rect(params)
+	return BasicElem('rect', params)
 end
 
 
@@ -650,36 +594,8 @@ end
 
 --[[
 --]]
-local Use = {}
-setmetatable(Use, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-
-local Use_mt = {
-	__index = Use;
-}
-
-function Use.init(self, params)
-	local obj = params or {}
-	setmetatable(obj, Use_mt);
-
-	return obj;
-end
-
-function Use.new(self, params)
-	return self:init(params);
-end
-
--- write ourself out as an SVG string
-function Use.write(self, strm)
-	strm:openElement("use")
-	for name, value in pairs(self) do
-			strm:addAttribute(name, tostring(value));
-	end
-
-	strm:closeElement();
+local function Use(params)
+	return BasicElem('use', params);
 end
 
 

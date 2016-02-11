@@ -10,10 +10,7 @@ local rect = SVGGeometry.Rect;
 local line = SVGGeometry.Line;
 
 
-local width = 640;
-local height = 480;
-local mstream = size(width, height)
-local ImageStream = SVGStream(mstream);
+local ImageStream = size()
 
 
 function mouseDown(activity)
@@ -58,9 +55,6 @@ local function draw(strm)
 end
 
 
-
-function frame()
-	draw(ImageStream);
-end
+draw(ImageStream);
 
 run()

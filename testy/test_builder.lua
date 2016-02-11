@@ -9,33 +9,20 @@ local svg = SVGGeometry.SVG;
 local rect = SVGGeometry.Rect;
 local circle = SVGGeometry.Circle;
 
-
-local keycodes = require("remotesvg.jskeycodes")
-
-
-local width = 640;
-local height = 480;
-local ImageStream = size({width = width, height=height})
+local ImageStream = size()
 
 
-function mouseMove(activity)
-	print("mouseMove: ", activity.x, activity.y)
-end
-
-local function drawCircle(filename)
+local function draw(ImageStream)
 	ImageStream:reset();
 
+		-- Show outline of canvas using 'rect' element
+
+	-- demonstrate document format API
 	local doc = svg {
 		version="1.1", 
 		width = "12cm", height= "4cm", 
 		viewBox="0 0 1200 400",
 		
-		-- Show outline of canvas using 'rect' element
-		rect {x = 1, y = 1, width = 1198, height = 398,
-			fill = "none",
-			stroke = "blue",
-			["stroke-width"] = 2
-		},
 
 		circle {
   			fill="red", 
@@ -48,12 +35,19 @@ local function drawCircle(filename)
 		
 	}
 
+	-- Demonstrate programmatic builder API
+	doc:append('rect')
+		:attr('x', 1)
+		:attr('y', 1)
+		:attr('width', 1198)
+		:attr('height', 398)
+		:attr('fill', "none")
+		:attr('stroke', "blue")
+		:attr('stroke-width', 2);
+
 	doc:write(ImageStream);
 end
 
-
-function frame()
-	drawCircle();
-end
+draw(ImageStream);
 
 run()

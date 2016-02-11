@@ -73,6 +73,8 @@ end
     embedded in the .htm file the client loads.
 --]]
 function size(params)
+  params = params or {}
+
   ScreenWidth = params.width or 0;
   ScreenHeight = params.height or 0;
 
@@ -151,7 +153,6 @@ local function loadStartupContent(self)
 
     startupContent = string.gsub(content, "%<%?(%a+)%?%>", subs)
     
-    --print(startupContent)
     return startupContent
 end
 
@@ -227,7 +228,7 @@ local function onInterval(ioinstance)
 end
 
 
--- uncomment if you want to turn off success messages
+-- uncomment if you want to suppress success messages
 --turbo.log.categories.success = false;
 
 

@@ -16,9 +16,8 @@ local path = SVGGeometry.Path;
 local text = SVGGeometry.Text;
 local use = SVGGeometry.Use;
 
-local width = 640;
-local height = 480;
-local ImageStream = size(width, height)
+
+local ImageStream = size()
 
 
 local function draw(ImageStream)
