@@ -3,18 +3,9 @@
 package.path = "../?.lua;"..package.path;
 
 local SVGInteractor = require("remotesvg.SVGInteractor")
-local SVGGeometry = require("remotesvg.SVGGeometry")
+local SVGGeometry = require("remotesvg.SVGGeometry")()
 
-
-local svg = SVGGeometry.SVG;
-local group = SVGGeometry.Group;
-local rect = SVGGeometry.Rect;
-local circle = SVGGeometry.Circle;
-local defs = SVGGeometry.Definitions;
-local ellipse = SVGGeometry.Ellipse;
-local path = SVGGeometry.Path;
-local text = SVGGeometry.Text;
-local use = SVGGeometry.Use;
+local group = g;
 
 
 local ImageStream = size()
@@ -24,7 +15,6 @@ local function draw(ImageStream)
   ImageStream:reset();
 
   local doc = svg{
-    xmlns="http://www.w3.org/2000/svg",
     ['xmlns:xlink'] = "http://www.w3.org/1999/xlink",
     width="12cm", 
     height="5.25cm", 

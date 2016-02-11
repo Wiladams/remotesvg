@@ -3,19 +3,13 @@
 package.path = "../?.lua;"..package.path;
 
 local SVGInteractor = require("remotesvg.SVGInteractor")
-local SVGGeometry = require("remotesvg.SVGGeometry")
-
-local svg = SVGGeometry.SVG;
-local rect = SVGGeometry.Rect;
-local circle = SVGGeometry.Circle;
+local SVGGeometry = require("remotesvg.SVGGeometry")()
 
 
 local keycodes = require("remotesvg.jskeycodes")
 
 
-local width = 640;
-local height = 480;
-local ImageStream = size({width = width, height=height})
+local ImageStream = size()
 
 
 function mouseMove(activity)
@@ -26,10 +20,9 @@ local function drawCircle(filename)
 	ImageStream:reset();
 
 	local doc = svg {
-		version="1.1", 
 		width = "12cm", height= "4cm", 
 		viewBox="0 0 1200 400",
-		
+
 		-- Show outline of canvas using 'rect' element
 		rect {x = 1, y = 1, width = 1198, height = 398,
 			fill = "none",

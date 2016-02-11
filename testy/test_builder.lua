@@ -3,11 +3,8 @@
 package.path = "../?.lua;"..package.path;
 
 local SVGInteractor = require("remotesvg.SVGInteractor")
-local SVGGeometry = require("remotesvg.SVGGeometry")
+local SVGGeometry = require("remotesvg.SVGGeometry")()
 
-local svg = SVGGeometry.SVG;
-local rect = SVGGeometry.Rect;
-local circle = SVGGeometry.Circle;
 
 local ImageStream = size()
 
@@ -19,7 +16,6 @@ local function draw(ImageStream)
 
 	-- demonstrate document format API
 	local doc = svg {
-		version="1.1", 
 		width = "12cm", height= "4cm", 
 		viewBox="0 0 1200 400",
 		

@@ -44,8 +44,8 @@ function SVGStream.closeTag(self)
 end
 
 
-function SVGStream.addAttribute(self, name, value)
-	self.BaseStream:writeString(" "..name..' = "'..value..'"');
+function SVGStream.writeAttribute(self, name, value)
+	self.BaseStream:writeString(" "..name.." = '"..value.."'");
 end
 
 function SVGStream.closeElement(self, elName)

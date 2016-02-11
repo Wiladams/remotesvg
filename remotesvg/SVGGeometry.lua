@@ -32,10 +32,19 @@ function BasicElem.attr(self, name, value)
 end
 
 -- Add a new child element
-function BasicElem.append(name)
+function BasicElem.append(self, name)
 	-- based on the obj, find the right object
 	-- to represent it.
-	local child = BasicElem(name);
+	local child = nil;
+
+	if type(name) == "table" then
+		child = name;
+	elseif type(name) == "string" then
+		child = BasicElem(name);
+	else
+		return nil;
+	end
+
 	table.insert(self, child);
 
 	return child;
@@ -44,125 +53,53 @@ end
 function BasicElem.write(self, strm)
 	strm:openElement(self._kind);
 
+	local childcount = 0;
+
 	for name, value in pairs(self) do
-		if type(value) ~= "table" and
-			name ~= "_kind" then
-			strm:addAttribute(name, tostring(value));
+		if type(value) == "table" then
+			childcount = childcount + 1;
+		else
+			if name ~= "_kind" then
+				strm:writeAttribute(name, tostring(value));
+			end
 		end
 	end
 
-	strm:closeElement();
+	if childcount > 0 then
+		strm:closeTag();
+
+		-- write out child nodes
+		for _, value in pairs(self) do
+			if type(value) == "table" then
+				value:write(strm);
+			end
+		end
+		
+		strm:closeElement(self._kind);
+	else
+		strm:closeElement();
+	end
 end
 
---[[
-	BasicGroup
---]]
 
 --[[
 	SVG
 --]]
-local SVG = {}
-setmetatable(SVG, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-local SVG_mt = {
-	__index = SVG;
-}
+local function SVG(params)
+	local elem = BasicElem('svg', params);
+	elem.xmlns = elem.xmlns or "http://www.w3.org/2000/svg"
+	elem.version = params.version or "1.1"
 
-function SVG.init(self, params)
-	local obj = params or {}
-	obj.xmlns = obj.xmlns or 'http://www.w3.org/2000/svg';
-
-	setmetatable(obj, SVG_mt);
-
-	return obj;
-end
-
-function SVG.new(self, ...)
-	return self:init(...)
-end
-
-function SVG.append(self, kind, params)
-	local obj = BasicElem(kind, params)
-	table.insert(self, obj)
-
-	return obj;
-end
-
-function SVG.addShape(self, shape)
-	table.insert(self, shape);
-end
-
-function SVG.write(self, strm)
-
-	strm:openElement("svg");
-	for name, value in pairs(self) do
-		if type(value) ~= "table" then
-			strm:addAttribute(name, tostring(value));
-		end
-	end
-	strm:closeTag();
-
-	for _, value in pairs(self) do
-		if type(value) == "table" then
-			value:write(strm);
-		end
-	end
-
-	strm:closeElement("svg");
+	return elem;
 end
 
 --[[
-
+	Definitions
 --]]
-local Definitions = {}
-setmetatable(Definitions, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-local Definitions_mt = {
-	__index = Definitions;
-}
-
-function Definitions.init(self, params)
-	local obj = params or {}
-
-	setmetatable(obj, Definitions_mt);
-
-	return obj;
+local function Definitions(params)
+	return BasicElem('defs', params);
 end
 
-function Definitions.new(self, ...)
-	return self:init(...)
-end
-
-function Definitions.addShape(self, shape)
-	table.insert(self, shape);
-end
-
-function Definitions.write(self, strm)
-	strm:openElement("defs");
-
-	-- write things as attributes of the opening tag
-	for name, value in pairs(self) do
-		if type(value) ~= "table" then
-			strm:addAttribute(name, tostring(value));
-		end
-	end
-	strm:closeTag();
-
-	-- now go through looking for shapes
-	for name, value in pairs(self) do
-		if type(value) == "table" then
-			value:write(strm);
-		end
-	end
-
-	strm:closeElement("defs");
-end
 
 --[[
 	Group
@@ -174,54 +111,10 @@ end
 
 	Children are specified by putting them in the "Shapes" table.
 --]]
-
-local Group = {}
-setmetatable(Group, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-local Group_mt = {
-	__index = Group;
-}
-
-function Group.init(self, params)
-	local obj = params or {}
-	--obj.Shapes = obj.Shapes or {}
-
-	setmetatable(obj, Group_mt);
-
-	return obj;
+local Group = function(params)
+	return BasicElem('g', params)
 end
 
-function Group.new(self, ...)
-	return self:init(...)
-end
-
-function Group.addShape(self, shape)
-	table.insert(self, shape);
-end
-
-function Group.write(self, strm)
-	strm:openElement("g");
-
-	-- write things as attributes of the opening tag
-	for name, value in pairs(self) do
-		if type(value) ~= "table" then
-			strm:addAttribute(name, tostring(value));
-		end
-	end
-	strm:closeTag();
-
-	-- now go through looking for shapes
-	for name, value in pairs(self) do
-		if type(value) == "table" then
-			value:write(strm);
-		end
-	end
-
-	strm:closeElement("g");
-end
 
 
 --[[
@@ -265,7 +158,7 @@ function Style.toString(self)
 	return ret;
 end
 
-function Style.addAttribute(self, name, value)
+function Style.writeAttribute(self, name, value)
 	self[name] = value;
 end
 
@@ -283,11 +176,59 @@ local function Circle(params)
 	return BasicElem('circle', params)
 end
 
---[[
---]]
+
 local function Ellipse(params)
 	return BasicElem('ellipse', params)
 end
+
+
+--[[
+	Gradients
+--]]
+local function LinearGradient(params)
+	return BasicElem('linearGradient', params)
+end
+
+local function RadialGradient(params)
+	return BasicElem('radialGradient', params)
+end
+
+local function Stop(params)
+	return BasicElem('stop', params)
+end
+
+--[[
+	Literal
+
+	Copies whatever is contained directory into the
+	output stream.
+--]]
+local Literal = {}
+setmetatable(Literal, {
+	__call = function(self, ...)
+		return self:new(...);
+	end,
+	})
+local Literal_mt = {
+	__index = Literal;
+}
+
+function Literal.new(self, text)
+	local obj =  {
+		Text = text;
+	}
+	setmetatable(obj, Literal_mt)
+
+	return obj;
+end
+
+function Literal.write(self, strm)
+	-- write out the text context
+	if self.Text then
+		strm:write(self.Text)
+	end
+end
+
 
 --[[
 	Line
@@ -302,7 +243,9 @@ local function Line(params)
 	return BasicElem('line', params)
 end
 
-
+local function Marker(params)
+	return BasicElem('marker', params)
+end
 
 --[[
 --]]
@@ -415,20 +358,41 @@ end
 
 
 function Path.write(self, strm)
-	strm:openElement("path")
+	strm:openElement(self._kind);
+
+	local childcount = 0;
+
+	-- write out attributes first
 	for name, value in pairs(self) do
-		if type(value) == "string" or
-			type(value) == "number" then
-			strm:addAttribute(name, tostring(value));
+		if type(value) == "table" then
+			childcount = childcount + 1;
+		else
+			if name ~= "_kind" then
+				strm:writeAttribute(name, tostring(value));
+			end
 		end
 	end
 
-	-- write out the instructions
+	-- write out instructions attribute if it hasn't
+	-- been written as an attribute already
 	if not self.d then
-		strm:addAttribute("d", self:pathToString())
+		strm:writeAttribute("d", self:pathToString())
 	end
+	
+	if childcount > 0 then
+		strm:closeTag();
 
-	strm:closeElement();
+		-- write out child nodes
+		for _, value in pairs(self) do
+			if type(value) == "table" then
+				value:write(strm);
+			end
+		end
+		
+		strm:closeElement(self._kind);
+	else
+		strm:closeElement();
+	end
 end
 
 --[[
@@ -464,7 +428,7 @@ function Polygon.write(self, strm)
 	for name, value in pairs(self) do
 		if type(value) == "string" or
 			type(value) == "number" then
-			strm:addAttribute(name, tostring(value));
+			strm:writeAttribute(name, tostring(value));
 		end
 	end
 
@@ -476,7 +440,7 @@ function Polygon.write(self, strm)
 		end
 		local pointsValue = table.concat(tbl, ' ');
 --print("pointsValue: ", pointsValue)
-		strm:addAttribute("points", pointsValue);
+		strm:writeAttribute("points", pointsValue);
 	end
 
 	strm:closeElement();
@@ -516,7 +480,7 @@ function PolyLine.write(self, strm)
 	for name, value in pairs(self) do
 		if type(value) == "string" or
 			type(value) == "number" then
-			strm:addAttribute(name, tostring(value));
+			strm:writeAttribute(name, tostring(value));
 		end
 	end
 
@@ -528,7 +492,7 @@ function PolyLine.write(self, strm)
 		end
 		local pointsValue = table.concat(tbl, ' ');
 --print("pointsValue: ", pointsValue)
-		strm:addAttribute("points", pointsValue);
+		strm:writeAttribute("points", pointsValue);
 	end
 
 	strm:closeElement();
@@ -578,7 +542,7 @@ function Text.write(self, strm)
 
 	for name, value in pairs(self) do
 		if name ~= "Text" then
-			strm:addAttribute(name, tostring(value));
+			strm:writeAttribute(name, tostring(value));
 		end
 	end
 	strm:closeTag();
@@ -603,29 +567,43 @@ end
 --[[
 	Interface exposed to outside world
 --]]
-return {
-	SVG = SVG;		-- check
-	Definitions = Definitions;	-- check
-	Group = Group;				-- check
-	Stroke = Stroke;
-	Fill = Fill;
-	LinearGradient = LinearGradient;
-	RadialGradient = RadialGradient;
-	Stop = Stop;
+local exports = {
+	svg = SVG;		-- check
+	defs = Definitions;	-- check
+	g = Group;				-- check
+	stroke = Stroke;
+	fill = Fill;
 
-	Circle = Circle;			-- check
-	Ellipse = Ellipse;			-- check
-	Image = Image;
-	Line = Line;				-- check
-	Marker = Marker;
-	Polygon = Polygon;			-- check
-	PolyLine = PolyLine;		-- check
-	Path = Path;
-	Rect = Rect;				-- check
-	Style = Style;				-- initial
-	Text = Text;				-- check
-	TextPath = TextPath;
-	TRef = TRef;
-	TSpan = TSpan;
-	Use = Use;					-- check
+	circle = Circle;			-- check
+	ellipse = Ellipse;			-- check
+	image = Image;
+	line = Line;				-- check
+	linearGradient = LinearGradient;	-- check
+	literal = Literal;			-- check
+	marker = Marker;			-- check
+	polygon = Polygon;			-- check
+	polyLine = PolyLine;		-- check
+	radialGradient = RadialGradient;	-- check
+	path = Path;				-- check
+	rect = Rect;				-- check
+	stop = Stop;				-- check
+	style = Style;				-- initial
+	text = Text;				-- check
+	textPath = TextPath;
+	tRef = TRef;
+	tSpan = TSpan;
+	use = Use;					-- check
 }
+setmetatable(exports, {
+	__call = function(self, tbl)
+		tbl = tbl or _G;
+
+		for k,v in pairs(exports) do
+			tbl[k] = v;
+		end
+
+		return self;
+	end,
+})
+
+return exports

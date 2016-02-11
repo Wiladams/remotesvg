@@ -3,11 +3,7 @@
 package.path = "../?.lua;"..package.path;
 
 local SVGInteractor = require("remotesvg.SVGInteractor")
-local SVGStream = require("remotesvg.SVGStream")
-local SVGGeometry = require("remotesvg.SVGGeometry")
-local svg = SVGGeometry.SVG;
-local rect = SVGGeometry.Rect;
-local line = SVGGeometry.Line;
+local SVGGeometry = require("remotesvg.SVGGeometry")()
 
 
 local ImageStream = size()
@@ -24,7 +20,11 @@ end
 local function draw(strm)
 	strm:reset();
 
-	local doc = svg({width = "12cm", height= "4cm", viewBox="0 0 1200 400"})
+	local doc = svg {
+		width = "12cm", 
+		height= "4cm", 
+		viewBox="0 0 1200 400",
+	}
 
 	local r1 = rect({
 		x = 1;
@@ -43,12 +43,12 @@ local function draw(strm)
    local l5 = line({x1=900, y1=300, x2=1100, y2=100, stroke = "green", ["stroke-width"]=25});
 
 
-	doc:addShape(r1);
-	doc:addShape(l1);
-	doc:addShape(l2);
-	doc:addShape(l3);
-	doc:addShape(l4);
-	doc:addShape(l5);
+	doc:append(r1);
+	doc:append(l1);
+	doc:append(l2);
+	doc:append(l3);
+	doc:append(l4);
+	doc:append(l5);
 
 
 	doc:write(strm);
