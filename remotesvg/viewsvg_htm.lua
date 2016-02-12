@@ -1,32 +1,13 @@
+--[[
+    This brief html is the most minimal necessary to display 
+    svg graphics oming from the server.  There is no interaction
+    back to the server, other than whatever the svg itself sets up.
+--]]
 return [[
 <!DOCTYPE html>
 <html>
 	<head>
 		<title>SVG View</title>
-
-		<script language="javascript" type="text/javascript">
-			window.addEventListener('load', eventWindowLoaded, false);
-
-      PageInterval = <?pageinterval?>;
-
-      // image used to handle async downloads
-      var downloadingImage = new Image();
-      downloadingImage.onload = function(){
-        document.getElementById("basesvg").data = this.src;
-      }
-
-      function eventWindowLoaded()
-      {
-        // Capture the image once every few milliseconds
-        //setInterval("refreshImage()", FrameInterval); 
-      }
-      
-			function refreshImage() 
-			{
-          downloadingImage.src = "./grab.svg?"+Math.random();
-			}
-
-		</script>
 	</head>
 
 	<body style="margin:0px">

@@ -3,7 +3,7 @@
 package.path = "../?.lua;"..package.path;
 
 local SVGInteractor = require("remotesvg.SVGInteractor")
-local SVGGeometry = require("remotesvg.SVGGeometry")()
+require("remotesvg.SVGElements")()
 
 local ImageStream = size()
 
