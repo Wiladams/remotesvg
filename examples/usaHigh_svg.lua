@@ -1,55 +1,25 @@
-#!/usr/bin/env luajit 
-
-package.path = "../?.lua;"..package.path;
-
-local SVGInteractor = require("remotesvg.SVGInteractor")
-require("remotesvg.SVGElements")()
-
-
-local ImageStream = size()
-
-function mouseDown(activity)
-	print("activity: ", activity.action, activity.which, activity.x, activity.y)
-end
+--[[
+	This is a USA map created using remotesvg by William A Adams
+	The 'document' in and of itself will not do anything interesting.
+	when paired with an application that is connected to the network,
+	this document can be used to write out a .svg file to be viewed
+	by the browser.
+--]]
 
 -- events
 -- https://www.w3.org/TR/SVG/interact.html#PointerEventsProperty
 
 -- (c) ammap.com | SVG map of USA -->
-local doc = svg {
+return svg {
 	['xmlns:amcharts'] ="http://amcharts.com/ammap", 
 	['xmlns:xlink'] ="http://www.w3.org/1999/xlink", 
     width="100%", 
     height="100%", 
     viewBox="0 0 1200 1000",
     ['pointer-events'] = 'all',
-    --onmousedown = 'HandleMouseDown',
     onmousedown = 'HandleMouseDown(evt);',
-
-
-	script {
-		literal[[
-			function map(x, low, high, low2, high2)
-			{
-				return low2 + ((x-low)/(high-low) * (high2-low2));
-			}
-		]];
-
-		literal[[
-      		function HandleMouseDown(e)
-      		{      
-      			//alert("HandleMouseDown: "+e.which);
-
-				var x = e.pageX;	// map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
-				var y = e.pageY;	// map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
-
-      			uioSocket.send("{action='mouseDown';which="+e.which+";x="+x+";y="+y+"}");
-      		}
-    	]];
-    };
-
-
-
+    onmousemove = 'HandleMouseMove(evt);',
+    --onclick = 'HandleMouseClick(evt);',
 
 	defs {
 		literal [[
@@ -133,12 +103,3 @@ local doc = svg {
 	}
 }	-- svg
 
-
-
--- This is a one off
--- we won't be refreshing the image, so just draw
--- into the image stream once, and do NOT implement
--- the 'frame()' function.
-doc:write(ImageStream);
-
-run()

@@ -68,8 +68,53 @@ return [[
         	// svg DOM
         	if (svgwin) {
         		svgwin.uioSocket = uioSocket;
+
+            // set the functions so they can be accessed
+            // from within SVG script blocks
+            svgwin.HandleMouseMove = HandleMouseMove;
+            svgwin.HandleMouseDown = HandleMouseDown;
+            svgwin.HandleMouseUp = HandleMouseUp;
+            svgwin.HandleMouseClick = HandleMouseClick;
         	}
       	}
+
+        function map(x, low, high, low2, high2)
+        {
+          return low2 + ((x-low)/(high-low) * (high2-low2));
+        }
+
+        // Mouse Movement
+        function HandleMouseMove(e)
+        {      
+          var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
+          var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
+
+          uioSocket.send("{action='mouseMove';x="+x+";y="+y+"}");
+        }
+
+        function HandleMouseDown(e)
+        {      
+          var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
+          var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
+
+          uioSocket.send("{action='mouseDown';which="+e.which+";x="+x+";y="+y+"; id='"+e.target.id+"'}");
+        }
+
+        function HandleMouseUp(e)
+        {      
+          var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
+          var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
+
+          uioSocket.send("{action='mouseUp';which="+e.which+";x="+x+";y="+y+"}");
+        }
+
+        function HandleMouseClick()
+        {      
+          var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
+          var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
+
+          uioSocket.send("{action='mouseClick';which="+e.which+";x="+x+";y="+y+"}");
+        }
 
 		</script>
 	</head>
