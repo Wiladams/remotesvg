@@ -1,3 +1,5 @@
+#!/usr/bin/env luajit 
+
 package.path = "../?.lua;"..package.path;
 
 local SVGInteractor = require("remotesvg.SVGInteractor")
@@ -6,6 +8,9 @@ require("remotesvg.SVGElements")()
 
 local ImageStream = size()
 
+function mouseDown(activity)
+	print("activity: ", activity.action, activity.which, activity.x, activity.y)
+end
 
 -- events
 -- https://www.w3.org/TR/SVG/interact.html#PointerEventsProperty
@@ -18,17 +23,32 @@ local doc = svg {
     height="100%", 
     viewBox="0 0 1200 1000",
     ['pointer-events'] = 'all',
-    onmousedown = 'HandleMouseDown();',
+    --onmousedown = 'HandleMouseDown',
+    onmousedown = 'HandleMouseDown(evt);',
 
 
 	script {
 		literal[[
-		function HandleMouseDown(e)
-		{
-			alert("mouse click");
-		}
-		]]
-	},
+			function map(x, low, high, low2, high2)
+			{
+				return low2 + ((x-low)/(high-low) * (high2-low2));
+			}
+		]];
+
+		literal[[
+      		function HandleMouseDown(e)
+      		{      
+      			//alert("HandleMouseDown: "+e.which);
+
+				var x = e.pageX;	// map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
+				var y = e.pageY;	// map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
+
+      			uioSocket.send("{action='mouseDown';which="+e.which+";x="+x+";y="+y+"}");
+      		}
+    	]];
+    };
+
+
 
 
 	defs {

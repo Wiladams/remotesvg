@@ -8,10 +8,74 @@ return [[
 <html>
 	<head>
 		<title>SVG View</title>
+
+		<script language="javascript" type="text/javascript">
+		PageInterval = <?pageinterval?>;
+        WebSocketBase = '<?websocketbase?>';
+
+		
+
+		function init()
+		{
+      		//alert("body onload init()")
+
+	        // get at the svgObject, document, and window
+    	    var svgObject = document.getElementById('svgObject');
+        	if (svgObject && svgObject.contentDocument)
+        		svgdoc = svgObject.contentDocument;
+        	else try {
+        		svgdoc = svgObject.getSVGDocument();
+        	}
+        	catch(exception) {
+        		alert('Neither the HTMLObjectElement nor the getSVGDocument interface are implemented.');
+    		}
+
+
+			if (svgdoc && svgdoc.defaultView)
+    			svgwin = svgdoc.defaultView;
+  			else if (object.window)
+    			svgwin = object.window;
+  			else try {
+    			svgwin = object.getWindow();
+  			}
+  			catch(exception) {
+    			alert('The DocumentView interface is not supported\r\n' +
+          			'Non-W3C methods of obtaining "window" also failed');
+  			}
+
+        	//setInterval("refreshImage()", PageInterval); 
+        	setupWebsocket();
+
+		}
+
+
+      	function setupWebsocket()
+      	{
+        	var uioUri = WebSocketBase + 'ws/uiosocket'
+        
+        	uioSocket = new WebSocket(uioUri); 
+        	//this.uioSocket.onerror = ...;
+        	//this.uioSocket.onopen = ...;
+        	//this.uioSocket.onmessage = ...;
+        
+        	// If the socket closes, try to reopen
+        	// it every second
+        	uioSocket.onclose = function(){
+          		setTimeout(setupWebSocket, 5000);
+        	};
+
+        	// set the socket as a var in the 
+        	// svg DOM
+        	if (svgwin) {
+        		svgwin.uioSocket = uioSocket;
+        	}
+      	}
+
+		</script>
 	</head>
 
-	<body style="margin:0px">
-    <object id="basesvg" data="grab.svg" type = "image/svg+xml" width="100%" height="100%"></object>
-  </body>
+	<body onload="init()" style="margin:0px">
+    	<object id="svgObject" data="grab.svg" type = "image/svg+xml" width="100%" height="100%"></object>
+  	</body>
 </html>
 ]]
