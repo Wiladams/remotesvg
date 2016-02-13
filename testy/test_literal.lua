@@ -3,13 +3,12 @@
 package.path = "../?.lua;"..package.path;
 
 --[[
-    the 'literal' element is the way in which a chunk of text
-    can be injected into the SVG directly.  This is useful
-    in a couple of cases.
+    a literal chunk of text can be injected into the SVG directly.  
+    in the body elements. This is useful in a couple of cases.
 
     You might want to include an XML comment block.  There
     is no comment block element, so you enclose it in 
-    a literal element.
+    a string literal.
 
     You may have some css style sheet embedded.  There
     is no CSS specific element type, so you just include
