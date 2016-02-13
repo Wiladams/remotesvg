@@ -44,7 +44,7 @@ local doc = svg{
   height="100%",
   viewBox="0 0 480 360", 
 
-  literal[[
+  [[
   <!--======================================================================-->
   <!--=  Copyright 2008 World Wide Web Consortium, (Massachusetts          =-->
   <!--=  Institute of Technology, European Research Consortium for         =-->
@@ -54,7 +54,7 @@ local doc = svg{
   <!--======================================================================-->
   ]];
 
-  literal[[
+  [[
   <SVGTestCase xmlns="http://www.w3.org/2000/02/svg/testsuite/description/"
     reviewer="AE" owner="JF" desc="Test different ways of defining a motion path." status="accepted"
     approved="yes"
@@ -70,12 +70,12 @@ local doc = svg{
   </SVGTestCase>
   ]];
 
-  literal[[ 
+  [[ 
   <title xml:id="test-title">$RCSfile: animate-elem-05-t.svg,v $</title> 
   ]];
 
   defs{
-    literal[[
+    [[
     <font-face font-family="SVGFreeSansASCII" unicode-range="U+0-7F"> 
       <font-face-src> 
         <font-face-uri xlink:href="../images/SVGFreeSans.svg#ascii" /> 
@@ -94,7 +94,7 @@ local doc = svg{
       ['font-family']="Arial",
       ['font-size']="36",
 
-      literal[[
+      [[
       <text x="48" y="48">Test a motion path</text> 
       <text x="48" y="95" fill="red">'values' attribute.</text> 
       <path d="M90,258 L240,180 L390,180" fill="none" stroke="black" stroke-width="6" /> 
@@ -124,7 +124,7 @@ local doc = svg{
     text ({['xml:id']="revision", x="10", y="340", stroke="none", fill="black"}, "$Revision: 1.9 $"), 
   };
 
-  literal[[ 
+  [[ 
   <rect xml:id="test-frame" x="1" y="1" width="478" height="358" fill="none" stroke="#000" /> 
   <!-- comment out this watermark once the test is approved -->
   <!--<g xml:id="draft-watermark">

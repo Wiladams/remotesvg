@@ -40,27 +40,27 @@ local function draw(ImageStream)
         },
 
         group {transform="translate(400,0)",
-          text ({x=50, y=210}, "large-arc-flag=0");
-          text ({x=50, y=250}, "sweep-flag=0");
+          text {x=50, y=210, "large-arc-flag=0"};
+          text {x=50, y=250, "sweep-flag=0"};
           use {["xlink:href"] = "#baseEllipses", ["xmlns:xlink"] = "http://www.w3.org/1999/xlink"},
           path {d="M 125,75 a100,50 0 0,0 100,50", fill="none", stroke="red", ["stroke-width"] = 6},
         },
 
         group {transform="translate(800,0)",
-          text ({x=50, y=210}, "large-arc-flag=0");
-          text ({x=50, y=250}, "sweep-flag=1");
+          text {x=50, y=210, "large-arc-flag=0"};
+          text {x=50, y=250, "sweep-flag=1"};
           use {["xlink:href"]="#baseEllipses", ["xmlns:xlink"] = "http://www.w3.org/1999/xlink"};
           path {d="M 125,75 a100,50 0 0,1 100,50", fill="none", stroke="red", ["stroke-width"] = 6};
         },
         group {transform="translate(400,250)";
-          text ({x=50, y=210}, "large-arc-flag=1");
-          text ({x=50, y=250}, "sweep-flag=0");
+          text {x=50, y=210, "large-arc-flag=1"};
+          text {x=50, y=250, "sweep-flag=0"};
           use {["xlink:href"] ="#baseEllipses", ["xmlns:xlink"] = "http://www.w3.org/1999/xlink"};
           path {d="M 125,75 a100,50 0 1,0 100,50", fill="none", stroke="red", ["stroke-width"] = 6};
         };
         group {transform="translate(800,250)";
-          text ({x=50, y=210}, "large-arc-flag=1");
-          text ({x=50, y=250}, "sweep-flag=1");
+          text {x=50, y=210, "large-arc-flag=1"};
+          text {x=50, y=250, "sweep-flag=1"};
           use {["xlink:href"]="#baseEllipses", ["xmlns:xlink"] = "http://www.w3.org/1999/xlink"};
           path {d="M 125,75 a100,50 0 1,1 100,50", fill="none", stroke="red", ["stroke-width"] = 6};
         };

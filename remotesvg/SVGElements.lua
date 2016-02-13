@@ -56,7 +56,7 @@ function BasicElem.write(self, strm)
 	local childcount = 0;
 
 	for name, value in pairs(self) do
-		if type(value) == "table" then
+		if type(name) == "number" then
 			childcount = childcount + 1;
 		else
 			if name ~= "_kind" then
@@ -69,9 +69,11 @@ function BasicElem.write(self, strm)
 		strm:closeTag();
 
 		-- write out child nodes
-		for _, value in pairs(self) do
+		for idx, value in ipairs(self) do
 			if type(value) == "table" then
 				value:write(strm);
+			else
+				strm:write(tostring(value));
 			end
 		end
 		
@@ -92,87 +94,6 @@ local function SVG(params)
 
 	return elem;
 end
-
-
---[[
-	Style
---]]
-local Style = {}
-setmetatable(Style, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-})
-
-local Style_mt = {
-	__index = Style;
-
-	__tostring = function(self)
-		return self:toString();
-	end
-}
-
-function Style.init(self, params)
-	local obj = params or {}
-	setmetatable(obj, Style_mt);
-
-	return obj;
-end
-
-function Style.new(self, params)
-	return self:init(params);
-end
-
-function Style.toString(self)
-	local res = {}
-	
-	for name, value in pairs(self) do
-		table.insert(res, name..":"..value)
-	end
-	
-	local ret = table.concat(res, ';');
-
-	return ret;
-end
-
-function Style.writeAttribute(self, name, value)
-	self[name] = value;
-end
-
-
-
---[[
-	Literal
-
-	Copies whatever is contained directory into the
-	output stream.
---]]
-local Literal = {}
-setmetatable(Literal, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-local Literal_mt = {
-	__index = Literal;
-}
-
-function Literal.new(self, text)
-	local obj =  {
-		Text = text;
-	}
-	setmetatable(obj, Literal_mt)
-
-	return obj;
-end
-
-function Literal.write(self, strm)
-	-- write out the text context
-	if self.Text then
-		strm:write(self.Text)
-	end
-end
-
 
 
 --[[
@@ -427,52 +348,6 @@ function PolyLine.write(self, strm)
 end
 
 
-
---[[
-	Text
---]]
-local Text = {}
-setmetatable(Text, {
-	__call = function(self, ...)
-		return self:new(...);
-	end,
-	})
-local Text_mt = {
-	__index = Text;
-}
-
-function Text.init(self, params, text)
-	local obj = params or {}
-	setmetatable(obj, Text_mt)
-
-	obj.Text = obj.Text or text;
-
-	return obj;
-end
-
-function Text.new(self, params, text)
-	return self:init(params, text);
-end
-
-function Text.write(self, strm)
-	strm:openElement("text")
-
-	for name, value in pairs(self) do
-		if name ~= "Text" then
-			strm:writeAttribute(name, tostring(value));
-		end
-	end
-	strm:closeTag();
-
-	-- write out the text context
-	if self.Text then
-		strm:write(self.Text)
-	end
-
-	strm:closeElement("text");
-end
-
-
 --[[
 	Interface exposed to outside world
 
@@ -551,7 +426,7 @@ local exports = {
 	-- Gradient Elements
 	linearGradient = function(params) return BasicElem('linearGradient', params) end;
 	radialGradient = function(params) return BasicElem('radialGradient', params) end;
-	stop = function(params) return BasicElem('stop', params) end;				-- check
+	stop = function(params) return BasicElem('stop', params) end;
 
 	-- Light Source elements
 	feDistantLight = function(params) return BasicElem('feDistantLight', params) end;
@@ -564,7 +439,7 @@ local exports = {
 	altGlyphItem = function(params) return BasicElem('altGlyphItem', params) end;
 	glyph = function(params) return BasicElem('glyph', params) end;
 	glyphRef = function(params) return BasicElem('glyphRef', params) end;
-	text = Text;				-- check
+	text = function(params) return BasicElem('text', params) end;
 	textPath = function(params) return BasicElem('textPath', params) end;
 	tref = function(params) return BasicElem('tref', params) end;
 	tspan = function(params) return BasicElem('tspan', params) end;
@@ -576,12 +451,9 @@ local exports = {
 	filter = function(params) return BasicElem('filter', params) end;
 	foreignObject = function(params) return BasicElem('foreignObject', params) end;
 	script = function(params) return BasicElem('script', params) end;
-	style = Style;				-- initial
-	--style = function(params) return BasicElem('style', params) end;
+	style = function(params) return BasicElem('style', params) end;
 	view = function(params) return BasicElem('view', params) end;
 
-	-- one of our own
-	literal = Literal;
 }
 setmetatable(exports, {
 	__call = function(self, tbl)
