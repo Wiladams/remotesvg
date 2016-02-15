@@ -19,7 +19,8 @@ return svg {
     ['pointer-events'] = 'all',
     onmousedown = 'HandleMouseDown(evt);',
     onmousemove = 'HandleMouseMove(evt);',
-
+    onkeydown = 'HandleKeyDown(evt);',
+    
 	defs {
 		style {type="text/css",
 [[

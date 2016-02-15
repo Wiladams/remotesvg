@@ -49,11 +49,3 @@ end
 draw(ImageStream);
 run();
 
---[[
-function frame()
-	draw(ImageStream);
-end
-
-frameInterval(3000);
-run()
---]]

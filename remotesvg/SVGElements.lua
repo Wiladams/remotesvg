@@ -1,3 +1,19 @@
+local attrNames = {
+	fill_opacity = "fill-opacity",
+
+	font_face = "font-face",
+	font_face_format = "font-face-format",
+	font_face_src = "font-face-src",
+	font_face_name = "font-face-name",
+	font_family = "font-family",
+	font_size = "font-size",
+
+	stop_color = "stop-color",
+
+	stroke_linecap = "stroke-linecap",
+	stroke_width = "stroke-width",
+
+}
 --[[
 	SVGElem
 
@@ -22,8 +38,6 @@ function BasicElem.new(self, kind, params)
 
 	return obj;
 end
-
-
 
 -- Add an attribute to ourself
 function BasicElem.attr(self, name, value)
@@ -60,12 +74,16 @@ function BasicElem.write(self, strm)
 			childcount = childcount + 1;
 		else
 			if name ~= "_kind" then
+				name = attrNames[name] or name;
 				strm:writeAttribute(name, tostring(value));
 			end
 		end
 	end
 
+	-- if we have some number of child nodes
+	-- then write them out 
 	if childcount > 0 then
+		-- first close the starting tag
 		strm:closeTag();
 
 		-- write out child nodes
@@ -73,6 +91,7 @@ function BasicElem.write(self, strm)
 			if type(value) == "table" then
 				value:write(strm);
 			else
+				-- write out pure text nodes
 				strm:write(tostring(value));
 			end
 		end
@@ -194,6 +213,16 @@ end
 function Path.moveTo(self, x, y)
     self:addCommand('M', x,y)
     return self
+end
+
+function Path.sqCurveBy(self, ...)
+	self:addCommand('t', ...)
+	return self;
+end
+
+function Path.sqCurveTo(self, ...)
+	self:addCommand('T', ...)
+	return self;
 end
 
 function Path.vLineBy(self, x, y)

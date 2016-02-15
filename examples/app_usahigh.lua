@@ -8,6 +8,9 @@ require("remotesvg.SVGElements")()
 
 local ImageStream = size()
 
+function keyDown(activity)
+	print(activity.action, activity.json);
+end
 
 function mouseDown(activity)
 	print("activity: ", activity.action, activity.id, activity.which, activity.x, activity.y)

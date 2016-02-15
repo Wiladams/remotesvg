@@ -1,0 +1,37 @@
+#!/usr/bin/env luajit
+
+--[[
+	This little command will read in a .lua file which contains nothing
+	more than a svg document table, and will generate the .svg file for it.
+
+	The input is the name of the 'document' file, without the lua extension.
+	So, for example, if you have a file 'mysvg.lua', the command would be:
+
+	$ ./gensvg mysvg
+
+	Which will generate the appropriate svg to stdout.  You can then
+	redirect this to whatever file you actually want it to be stored
+	in, or redirect to another tool.
+
+
+--]]
+package.path = "../?.lua;"..package.path;
+require("remotesvg.SVGElements")()
+
+
+-- read the source file
+-- pass in the name of your SVG document.lua file, without 
+-- the '.lua' extension.
+local filename = arg[1]
+if not filename then return end
+
+local doc = require(filename)
+
+-- generate svg and view it as a web page.
+-- access as: http://localhost:8080/screen
+-- Ctl-C to end
+
+local SVGInteractor = require("remotesvg.SVGInteractor")
+local ImageStream = size();
+doc:write(ImageStream)
+run();

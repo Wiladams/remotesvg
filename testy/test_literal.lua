@@ -26,11 +26,12 @@ package.path = "../?.lua;"..package.path;
     modified.
 --]]
 
-local SVGInteractor = require("remotesvg.SVGInteractor")
 require("remotesvg.SVGElements")()
+local FileStream = require("remotesvg.filestream")
+local SVGStream = require("remotesvg.SVGStream")
 
 
-local ImageStream = size()
+local ImageStream = SVGStream(FileStream.open("test_lineargradient.svg"))
 
 
 local doc = svg{
@@ -136,4 +137,3 @@ local doc = svg{
 
 doc:write(ImageStream)
 
-run();

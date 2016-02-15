@@ -43,12 +43,13 @@ return [[
           			'Non-W3C methods of obtaining "window" also failed');
   			}
 
-        	//setInterval("refreshImage()", PageInterval); 
-        	setupWebsocket();
-		    }
+        //setInterval("refreshImage()", PageInterval); 
+        setupWebsocket();
+		  }
+      
 
-      	function setupWebsocket()
-      	{
+      function setupWebsocket()
+      {
         	var uioUri = WebSocketBase + 'ws/uiosocket'
         
         	uioSocket = new WebSocket(uioUri); 
@@ -73,46 +74,57 @@ return [[
             svgwin.HandleMouseDown = HandleMouseDown;
             svgwin.HandleMouseUp = HandleMouseUp;
             svgwin.HandleMouseClick = HandleMouseClick;
+
+            svgwin.HandleKeyDown = HandleKeyDown;
         	}
-      	}
+      }
 
-        function map(x, low, high, low2, high2)
-        {
-          return low2 + ((x-low)/(high-low) * (high2-low2));
-        }
+      function map(x, low, high, low2, high2)
+      {
+        return low2 + ((x-low)/(high-low) * (high2-low2));
+      }
 
-        // Mouse Movement
-        function HandleMouseMove(e)
-        {      
+      // Keyboard Events
+      function HandleKeyDown(e)
+      {
+        //var msg = "{action='keyDown'; json='"+JSON.stringify(e)+"'}";
+        var msg = "{action='keyDown'}";
+
+        uioSocket.send(msg);
+      }
+
+      // Mouse Movement
+      function HandleMouseMove(e)
+      {      
           var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
           var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
 
           uioSocket.send("{action='mouseMove';x="+x+";y="+y+"}");
-        }
+      }
 
-        function HandleMouseDown(e)
-        {      
+      function HandleMouseDown(e)
+      {      
           var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
           var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
 
           uioSocket.send("{action='mouseDown';which="+e.which+";x="+x+";y="+y+"; id='"+e.target.id+"'}");
-        }
+      }
 
-        function HandleMouseUp(e)
-        {      
+      function HandleMouseUp(e)
+      {      
           var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
           var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
 
           uioSocket.send("{action='mouseUp';which="+e.which+";x="+x+";y="+y+"}");
-        }
+      }
 
-        function HandleMouseClick()
-        {      
+      function HandleMouseClick()
+      {      
           var x = e.pageX;  // map(e.pageX, 0,ImageWidth, 0,CaptureWidth);
           var y = e.pageY;  // map(e.pageY, 0,ImageHeight, 0,CaptureHeight);
 
           uioSocket.send("{action='mouseClick';which="+e.which+";x="+x+";y="+y+"}");
-        }
+      }
 
 		</script>
 	</head>
