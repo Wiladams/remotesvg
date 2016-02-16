@@ -8,10 +8,6 @@ local bit = require("bit")
 local lshift, rshift, band, bor = bit.lshift, bit.rshift, bit.band, bit.bor
 
 local XmlParser = require("remotesvg.SVGXmlParser")
-local transform2D = require("remotesvg.transform2D")
-local Bezier = require("remotesvg.Bezier")
-local colors = require("remotesvg.colors")
-local ctypes = require("remotesvg.ctypes")
 local isspace = ctypes.isspace;
 local isdigit = ctypes.isdigit;
 
