@@ -23,7 +23,7 @@ local function parseContent(s, markoffset, endoffset, contentCb, ud)
 	end
 	
 	if (contentCb) then
-		contentCb(ud, ffi.string(s+soffset));
+		contentCb(ud, ffi.string(s+soffset, endoffset-soffset));
 	end
 end
 

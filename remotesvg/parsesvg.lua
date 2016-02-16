@@ -40,9 +40,6 @@ end
 
 
 
-
-
-
 local SVGParser = {}
 setmetatable(SVGParser, {
 	__call = function(self, ...)
@@ -93,35 +90,37 @@ end
 
 
 
-function SVGParser.startElement(self, el, attr)
+function SVGParser.startElement(self, name, attr)
 	--print("SVGParser.startElement: ", el, attr)
+	--print("BEGIN: ", name)
+
 	-- create new element
-	local newElem = svg.BasicElem(el, attr)
+	local newElem = svg.BasicElem(name, attr)
 
 	-- if there's already something on the stack,
 	-- then add the current element as a child
 	if self.ElemStack:top() then
 		self.ElemStack:top():append(newElem)
 	else
-		self.Top = newElem;
+		self.Top = newElem
 	end
 
 	-- push the new element onto the stack
 	self.ElemStack:push(newElem);
 end
 
-
-function SVGParser.endElement(self, el)
+-- called whenever there is a closing tag for an element
+function SVGParser.endElement(self, name)
+	
 	-- pop it off the top of the stack
-	self.ElemStack:pop();
+	local oldone = self.ElemStack:pop();
+	--print("END: ", name, oldone._kind, #self.ElemStack)
 end
 
 -- Content is called for things like 
 -- text, comments, titles, descriptions and the like
 function SVGParser.content(self, s)
-	--print("CONTENT TYPE: ", type(s))
-	--print(s)
-
+	--print("CONTENT: ", s)
 	self.ElemStack:top():appendLiteral(s)
 end
 
