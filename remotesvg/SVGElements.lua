@@ -11,6 +11,7 @@ local attrNames = {
 	stop_color = "stop-color",
 
 	stroke_linecap = "stroke-linecap",
+	stroke_linejoin = "stroke-linejoin",
 	stroke_width = "stroke-width",
 
 }
@@ -46,6 +47,11 @@ function BasicElem.attr(self, name, value)
 end
 
 -- Add a new child element
+function BasicElem.appendLiteral(self, literal)
+	table.insert(self, literal)
+	return self;
+end
+
 function BasicElem.append(self, name)
 	-- based on the obj, find the right object
 	-- to represent it.
@@ -384,6 +390,8 @@ end
 	https://developer.mozilla.org/en-US/docs/Web/SVG/Element
 --]]
 local exports = {
+	BasicElem = BasicElem;
+
 	-- Animation Elements
 	animate = function(params) return BasicElem('animate', params) end;
 	animateColor = function(params) return BasicElem('animateColor', params) end;
