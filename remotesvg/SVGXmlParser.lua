@@ -28,8 +28,8 @@ local function parseContent(s, markoffset, endoffset, contentCb, ud)
 end
 
 
--- void (startelCb)(any ud, string el, table attr)
--- void (endelCb)(void* ud, const char* el)
+-- void (startelCb)(any ud, string name, table attr)
+-- void (endelCb)(any ud, string name)
 
 -- void * ud
 -- Some user supplied data that just gets passed along
@@ -74,9 +74,9 @@ local function parseElement(s, startoffset, endoffset, startelCb, endelCb, ud)
 	end
 	
 	-- turn it into a lua string
-	--local namelen = nameendoffset - nameoffset;
+	local namelen = nameendoffset - nameoffset;
 	--print("TAG name len: ", nameoffset, nameendoffset, namelen)
-	local name = ffi.string(s+nameoffset, nameendoffset-nameoffset)
+	local name = ffi.string(s+nameoffset, namelen)
 
 	-- Get attribs
 	while (not ending and (soffset < endoffset) ) do
@@ -150,7 +150,6 @@ end
 local function parseXML(input, startelCb, endelCb, contentCb, ud)
 	local s = ffi.cast("const char *", input);
 	local soffset = 0;
-	--local mark = s;
 	local markoffset = soffset;
 	local markoffsetend = soffset;
 
@@ -185,6 +184,8 @@ local function parseXML(input, startelCb, endelCb, contentCb, ud)
 
 	return true;
 end
+
+
 return {
 	parseXML = parseXML;
 }

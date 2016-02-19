@@ -1,4 +1,16 @@
-local attrNames = {
+
+-- Attribute names that have the '-' or ':' characters in them
+-- https://www.w3.org/TR/SVG/attindex.html
+-- we want to allow the user to specify lua friendly names as
+-- table indices, without having to quote them.  So, we have
+-- this alias table. 
+
+local attrNameAlias = {
+	accent_height = "accent-height",
+	arabic_form = "arabic-form",
+
+	cap_height = "cap-height",
+
 	fill_opacity = "fill-opacity",
 
 	font_face = "font-face",
@@ -7,14 +19,63 @@ local attrNames = {
 	font_face_name = "font-face-name",
 	font_family = "font-family",
 	font_size = "font-size",
+	font_stretch = "font-stretch",
+	font_style = "font-style",
+	font_variant = "font-variant",
+	font_weight = "font-weight",
+
+	glyph_name = "glyph-name",
+
+	horiz_adv_x = "horiz-adv-x",
+	horiz_origin_x = "horiz-origin-x",
+	horiz_origin_y = "horiz-origin-y",
+
+	overline_position = "overline-position",
+	overline_thickness = "overline-thickness",
+
+	panose_1 = "panose-1",
+
+	rendering_intent = "rendering-intent",
 
 	stop_color = "stop-color",
-
+	strikethrough_position = "strikethrough-position",
+	strikethrough_thickness = "strikethrough-thickness",
 	stroke_linecap = "stroke-linecap",
 	stroke_linejoin = "stroke-linejoin",
 	stroke_width = "stroke-width",
 
+	underline_position = "underline-position",
+	underline_thickness = "underline-thickness",
+	unicode_range = "unicode-range",
+	units_per_em = "units-per-em",
+
+	v_alphabetic = "v-alphabetic",
+	v_hanging = "v-hanging",
+	v_ideographic = "v-ideographic",
+	v_mathematical = "v-mathematical",
+	vert_adv_y = "vert-adv-y",
+	vert_origin_x = "vert-origin-x",
+	vert_origin_y = "vert-origin-y",
+
+	x_height = "x-height",
+	xlink_actuate = "xlink:actuate",
+	xlink_arcrole = "xlink:arcrole",
+	xlink_href = "xlink:href",
+	xlink_role = "xlink:role",
+	xlink_show = "xlink:show",
+	xlink_title = "xlink:title",
+	xlink_type = "xlink:type",
+	xml_base = "xml:base",
+	xml_lang = "xml:lang",
+	xml_space = "xml:space",
 }
+
+-- Given an attribute name, return the SVG name
+-- by looking up in alias table.
+local function realAttrName(name)
+	return attrNameAlias[name] or name;
+end
+
 --[[
 	SVGElem
 
@@ -80,7 +141,7 @@ function BasicElem.write(self, strm)
 			childcount = childcount + 1;
 		else
 			if name ~= "_kind" then
-				name = attrNames[name] or name;
+				name = realAttrName(name);
 				strm:writeAttribute(name, tostring(value));
 			end
 		end
@@ -111,6 +172,11 @@ end
 
 --[[
 	SVG
+
+	We specialize this one to ensure the xmlns and version
+	attributes are there.  
+
+	Without the xmlns attribute, some renderers will fail.
 --]]
 local function SVG(params)
 	local elem = BasicElem('svg', params);
@@ -122,6 +188,9 @@ end
 
 
 --[[
+	Path
+
+	A specialization so that path construction can happen 'on the fly'.
 --]]
 local Path = {}
 setmetatable(Path, {
@@ -202,16 +271,19 @@ function Path.hLineTo(self, x, y)
     return self
 end
 
+-- Line to relative position
 function Path.lineBy(self, x,y)
     self:addCommand('l', x, y)
     return self
 end
 
+-- Line to absolute position
 function Path.lineTo(self, x,y)
     self:addCommand('L', x, y)
     return self
 end
 
+-- Move to position
 function Path.moveBy(self, x, y)
     self:addCommand('m', x,y)
     return self
@@ -231,6 +303,7 @@ function Path.sqCurveTo(self, ...)
 	return self;
 end
 
+-- Vertical Line
 function Path.vLineBy(self, x, y)
     self:addCommand('v', x, y)
     return self
@@ -240,7 +313,7 @@ function Path.vLineTo(self, x, y)
     return self
 end
 
-
+-- Write out the thing to a stream
 function Path.write(self, strm)
 	strm:openElement(self._kind);
 
