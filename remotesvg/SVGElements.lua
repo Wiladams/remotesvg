@@ -70,6 +70,8 @@ local attrNameAlias = {
 	xml_space = "xml:space",
 }
 
+local SVGAttributes = require("remotesvg.SVGAttributes")
+
 -- Given an attribute name, return the SVG name
 -- by looking up in alias table.
 local function realAttrName(name)
@@ -129,6 +131,32 @@ function BasicElem.append(self, name)
 	table.insert(self, child);
 
 	return child;
+end
+
+-- go through each attribute parsing it
+-- to get a native lua form
+function BasicElem.parseAttributes(self, strict)
+	local newVals = {}
+	for name, value in pairs(self) do
+		if type(name) ~= number then
+			local n, val = SVGAttributes.parseAttribute(name, value, strict)
+			if n ~= name then
+				self[name] = nil;
+			end
+			
+			if n then
+				self[n] = val;
+			end
+		end
+	end
+
+	-- tell our children to parse their
+	-- attributes
+	for idx, value in ipairs(self) do
+		if type(value) == "table" then
+			value:parseAttributes(strict);
+		end
+	end
 end
 
 function BasicElem.write(self, strm)

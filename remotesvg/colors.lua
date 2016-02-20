@@ -1,6 +1,6 @@
 local bit = require("bit")
 local band, bor, lshift, rshift = bit.band, bit.bor, bit.lshift, bit.rshift
-local maths = require("ljgraph2D.maths");
+local maths = require("remotesvg.maths");
 local clamp = maths.clamp
 
 -- The actual layout in memory is:
