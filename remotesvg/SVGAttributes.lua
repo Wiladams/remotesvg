@@ -8,8 +8,9 @@ local RGB = colors.RGBA;
 local tonumber = tonumber;
 local tostring = tostring;
 
-
-local function paint(name, value, strict)
+-- These functions convert from SVG Attribute string values
+-- to lua specific types
+local function color(name, value, strict)
 	local function parseColorName(name)
 		return colors.svg[name] or RGB(128, 128, 128);
 	end
@@ -51,17 +52,30 @@ local function paint(name, value, strict)
 
 	return name, value
 end
+local paint = color;
+
 
 local function coord(name, value, strict)
 	if type(value) ~= "string" then
 		return name, value;
 	end
-	
+
 	local num, units = value:match("(%d*%.?%d*)(.*)")
 
 	num = tonumber(num);
 
 	return name, num, units
+end
+-- The specification for length is the same as for
+-- coordinates
+local length = coord
+
+local function number(name, value, strict)
+	if type(value) ~= "string" then
+		return name, value;
+	end
+
+	return name, tonumber(value)
 end
 
 -- Individual functions which deal with specific
@@ -77,9 +91,9 @@ print("attrs._default: ", name, value);
 end
 
 
-attrs.accent_height = coord
-attrs.accumulate = attrs._default;
-attrs.additive = attrs._default;
+attrs.accent_height = number
+attrs.accumulate = attrs._default;	-- 'none' | 'sum'
+attrs.additive = attrs._default;	-- 'replace' | 'sum'
 attrs.alignment_baseline = attrs._default;
 attrs.allowReorder = attrs._default;
 attrs.alphabetic = attrs._default;
@@ -125,8 +139,8 @@ attrs.display = attrs._default;
 attrs.divisor = attrs._default;
 attrs.dominant_baseline = attrs._default;
 attrs.dur = attrs._default;
-attrs.dx = coord;
-attrs.dy = coord;
+attrs.dx = number;
+attrs.dy = number;
 
 attrs.edgeMode = attrs._default;
 attrs.elevation = attrs._default;
@@ -143,7 +157,8 @@ attrs.fill_rule = attrs._default;
 attrs.filter = attrs._default;
 attrs.filterRes = attrs._default;
 attrs.filterUnits = attrs._default;
-attrs.flood_color = attrs._default;
+attrs['flood-color'] = color;
+attrs.flood_color = function(name, value, strict) return attrs['flood-color'](name,value,strict); end
 attrs.flood_opacity = attrs._default;
 attrs.font_family = attrs._default;
 attrs.font_size = attrs._default;
@@ -154,8 +169,8 @@ attrs.font_variant = attrs._default;
 attrs.font_weight = attrs._default;
 attrs.format = attrs._default;
 attrs.from = attrs._default;
-attrs.fx = attrs._default;
-attrs.fy = attrs._default;
+attrs.fx = coord;
+attrs.fy = coord;
 
 attrs.g1 = attrs._default;
 attrs.g2 = attrs._default;
@@ -167,7 +182,7 @@ attrs.gradientTransform = attrs._default;
 attrs.gradientUnits = attrs._default;
 
 attrs.hanging = attrs._default;
-attrs.height = coord;
+attrs.height = length;
 attrs.horiz_adv_x = attrs._default;
 attrs.horiz_origin_x = attrs._default;
 attrs['horiz-origin-x'] = attrs._default;
@@ -283,8 +298,8 @@ attrs.requiredFeatures = attrs._default;
 attrs.restart = attrs._default;
 attrs.result = attrs._default;
 attrs.rotate = attrs._default;
-attrs.rx = coord;
-attrs.ry = coord;
+attrs.rx = length;
+attrs.ry = length;
 
 attrs.scale = attrs._default;
 attrs.seed = attrs._default;
@@ -301,8 +316,8 @@ attrs.stdDeviation = attrs._default;
 attrs.stemh = attrs._default;
 attrs.stemv = attrs._default;
 attrs.stitchTiles = attrs._default;
-attrs['stop-color'] = function(name, value, strict) return paint('stop-color', value, strict) end
-attrs.stop_color = function(name, value, strict) return attrs['stop-color'](name, value, strict); end
+attrs['stop-color'] = color;
+attrs.stop_color = function(name, value, strict) return attrs['stop-color']('stop-color', value, strict); end
 attrs['stop-opacity'] = attrs._default;
 attrs.stop_opacity = attrs._default;
 attrs['strikethrough-position'] = attrs._default;
@@ -375,7 +390,7 @@ attrs['vert-origin-y'] = attrs._default;
 attrs.viewBox = attrs._default;
 attrs.visibility = attrs._default;
 
-attrs.width = coord;
+attrs.width = length;
 attrs.widths = attrs._default;
 attrs.word_spacing = attrs._default;
 attrs['word-spacing'] = attrs._default;
