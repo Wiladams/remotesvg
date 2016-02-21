@@ -62,9 +62,16 @@ local function coord(name, value, strict)
 
 	local num, units = value:match("(%d*%.?%d*)(.*)")
 
-	num = tonumber(num);
+	if not num then return nil; end
 
-	return name, num, units
+	local obj = {value = tonumber(num), units = units}
+	setmetatable(obj,{
+		__tostring = function(self)
+			return string.format("%d%s",self.value, self.units or "")
+		end,
+	})
+
+	return name, obj;
 end
 -- The specification for length is the same as for
 -- coordinates
@@ -78,359 +85,398 @@ local function number(name, value, strict)
 	return name, tonumber(value)
 end
 
+local function viewBox(name, value, strict)
+	if type(value) ~= "string" then
+		return name, value
+	end
+	local numpatt = "(%d*%.?%d*)"
+	local nums = {}
+	for num in value:gmatch(numpatt) do
+		--print("NUM: ", num, type(num))
+		if num ~= "" then
+			table.insert(nums, tonumber(num))
+		end
+	end
+
+	local obj = {
+		min_x = nums[1], 
+		min_y = nums[2], 
+		width = nums[3], 
+		height= nums[4]
+	}
+	
+	setmetatable(obj, {
+		__tostring = function(self)
+			return string.format("%d %d %d %d", 
+				self.min_x, self.min_y, self.width, self.height);
+		end,
+	})
+	
+	return obj;
+end
+
+
+
+
+
+
+
 -- Individual functions which deal with specific
 -- attributes
 local attrs = {}
 
 -- This is the function to be used when we don't have 
 -- any specific specialization for an attribute
-function attrs._default(name, value, strict)
-print("attrs._default: ", name, value);
+function default(name, value, strict)
+--print("{name = '', parser = default}: ", name, value);
 
 	return name, value
 end
 
 
-attrs.accent_height = number
-attrs.accumulate = attrs._default;	-- 'none' | 'sum'
-attrs.additive = attrs._default;	-- 'replace' | 'sum'
-attrs.alignment_baseline = attrs._default;
-attrs.allowReorder = attrs._default;
-attrs.alphabetic = attrs._default;
-attrs.amplitude = attrs._default;
-attrs.arabic_form = attrs._default;
-attrs.ascent = attrs._default;
-attrs.attributeName = attrs._default;
-attrs.attributeType = attrs._default;
-attrs.autoReverse = attrs._default;
-attrs.azimuth = attrs._default;
+attrs.accent_height = {name = 'accent-height', parser = number};
+attrs.accumulate = {name = 'accumulate', pardser = default};	-- 'none' | 'sum'
+attrs.additive = {name = 'additive', parser = default};	-- 'replace' | 'sum'
+attrs.alignment_baseline = {name = 'alignment-baseline', parser = default};
+attrs.allowReorder = {name = 'allowReorder', parser = default};
+attrs.alphabetic = {name = 'alphabetic', parser = number};
+attrs.amplitude = {name = 'amplitude', parser = default};
+attrs.arabic_form = {name = 'arabic-form', parser = default};
+attrs.ascent = {name = 'ascent', parser = number};
+attrs.attributeName = {name = 'attributeName', parser = default};
+attrs.attributeType = {name = 'attributeType', parser = default};
+attrs.autoReverse = {name = 'autoReverse', parser = default};
+attrs.azimuth = {name = 'azimuth', parser = default};
 
-attrs.baseFrequency = attrs._default;
-attrs.baseline_shift = attrs._default;
-attrs.baseProfile = attrs._default;
-attrs.bbox = attrs._default;
-attrs.begin = attrs._default;
-attrs.bias = attrs._default;
-attrs.by = attrs._default;
+attrs.baseFrequency = {name = 'baseFrequency', parser = default};
+attrs.baseline_shift = {name = 'baseline-shift', parser = default};
+attrs.baseProfile = {name = 'baseProfile', parser = default};
+attrs.bbox = {name = 'bbox', parser = default};
+attrs.begin = {name = 'begin', parser = default};
+attrs.bias = {name = 'bias', parser = default};
+attrs.by = {name = 'by', parser = default};
 
-attrs.calcMode = attrs._default;
-attrs.class = attrs._default;
-attrs.clip = attrs._default;
-attrs.clipPathUnits = attrs._default;
-attrs.clip_path = attrs._default;
-attrs.clip_rule = attrs._default;
-attrs.color = attrs._default;
-attrs.color_interpolation = attrs._default;
-attrs.color_interpolation_filters = attrs._default;
-attrs.color_profile = attrs._default;
-attrs.color_rendering = attrs._default;
-attrs.contentScriptType = attrs._default;
-attrs.contentStyleType = attrs._default;
-attrs.cursor = attrs._default;
-attrs.cx = coord;
-attrs.cy = coord;
+attrs.calcMode = {name = 'calcMode', parser = default};
+attrs.cap_height = {name = 'cap-height', parser = number};
+attrs['cap-height'] = attrs.cap_height;
+attrs.class = {name = 'class', parser = default};
+attrs.clip = {name = 'clip', parser = default};
+attrs.clipPathUnits = {name = 'clipPathUnits', parser = default};
+attrs.clip_path = {name = 'clip-path', parser = default};
+attrs.clip_rule = {name = 'clip-rule', parser = default};
+attrs.color = {name = 'color', parser = default};
+attrs.color_interpolation = {name = 'color-interpolation', parser = default};
+attrs.color_interpolation_filters = {name = 'color-interpolation-filters', parser = default};
+attrs.color_profile = {name = 'profile', parser = default};
+attrs.color_rendering = {name = 'color-rendering', parser = default};
+attrs.contentScriptType = {name = 'contentScriptType', parser = default};
+attrs.contentStyleType = {name = 'contentStyleType', parser = default};
+attrs.cursor = {name = 'cursor', parser = default};
+attrs.cx = {name='cx', parser = coord};
+attrs.cy = {name = 'cy', parser = coord};
 
-attrs.d = attrs._default;
-attrs.decelerate = attrs._default;
-attrs.descent = attrs._default;
-attrs.diffuseConstant = attrs._default;
-attrs.direction = attrs._default;
-attrs.display = attrs._default;
-attrs.divisor = attrs._default;
-attrs.dominant_baseline = attrs._default;
-attrs.dur = attrs._default;
-attrs.dx = number;
-attrs.dy = number;
+attrs.d = {name = 'd', parser = default};
+attrs.decelerate = {name = 'decelerate', parser = default};
+attrs.descent = {name = 'descent', parser = number};
+attrs.diffuseConstant = {name = 'diffuseConstant', parser = default};
+attrs.direction = {name = 'direction', parser = default};
+attrs.display = {name = 'display', parser = default};
+attrs.divisor = {name = 'divisor', parser = default};
+attrs.dominant_baseline = {name = 'dominant-baseline', parser = default};
+attrs.dur = {name = 'dur', parser = default};
+attrs.dx = {name='dx', parser = number};
+attrs.dy = {name = 'dy', parser = number};
 
-attrs.edgeMode = attrs._default;
-attrs.elevation = attrs._default;
-attrs.enable_background = attrs._default;
-attrs['enable-background'] = attrs._default;
-attrs['end'] = attrs._default;
-attrs.exponent = attrs._default;
-attrs.externalResourcesRequired = attrs._default;
+attrs.edgeMode = {name = 'edgeMode', parser = default};
+attrs.elevation = {name = 'elevation', parser = default};
+attrs.enable_background = {name = 'enable-background', parser = default};
+attrs['enable-background'] = attrs.enable_background;
+attrs['end'] = {name = 'end', parser = default};
+attrs.exponent = {name = 'exponent', parser = default};
+attrs.externalResourcesRequired = {name = 'externalResourcesRequired', parser = default};
 
-attrs.fill = paint;
-attrs.fill_opacity = attrs._default;
-attrs['fill-opacity'] = attrs._default;
-attrs.fill_rule = attrs._default;
-attrs.filter = attrs._default;
-attrs.filterRes = attrs._default;
-attrs.filterUnits = attrs._default;
-attrs['flood-color'] = color;
-attrs.flood_color = function(name, value, strict) return attrs['flood-color'](name,value,strict); end
-attrs.flood_opacity = attrs._default;
-attrs.font_family = attrs._default;
-attrs.font_size = attrs._default;
-attrs.font_size_adjust = attrs._default;
-attrs.font_stretch = attrs._default;
-attrs.font_style = attrs._default;
-attrs.font_variant = attrs._default;
-attrs.font_weight = attrs._default;
-attrs.format = attrs._default;
-attrs.from = attrs._default;
-attrs.fx = coord;
-attrs.fy = coord;
+attrs.fill = {name='fill', parser = paint};
+attrs.fill_opacity = {name = 'fill-opacity', parser = default};
+attrs['fill-opacity'] = attrs.fill_opacity;
+attrs.fill_rule = {name = 'fill-rule', parser = default};
+attrs['fill-rule'] = attrs.fill_rule;
+attrs.filter = {name = 'filter', parser = default};
+attrs.filterRes = {name = 'filterRes', parser = default};
+attrs.filterUnits = {name = 'filterUnits', parser = default};
+attrs.flood_color = {name='flood-color', parser =color};
+attrs['flood-color'] = attrs.flood_color;
+attrs.flood_opacity = {name = 'flood-opacity', parser = default};
+attrs.font_family = {name = 'font-family', parser = default};
+attrs.font_size = {name = 'font-size', parser = default};
+attrs.font_size_adjust = {name = 'font-size-adjust', parser = default};
+attrs.font_stretch = {name = 'font-stretch', parser = default};
+attrs.font_style = {name = 'font-style', parser = default};
+attrs.font_variant = {name = 'font-variant', parser = default};
+attrs.font_weight = {name = 'font-weight', parser = default};
+attrs.format = {name = 'format', parser = default};
+attrs.from = {name = 'from', parser = default};
+attrs.fx = {name='fx', parser=coord};
+attrs.fy = {name='fy', parser=coord};
 
-attrs.g1 = attrs._default;
-attrs.g2 = attrs._default;
-attrs.glyph_name = attrs._default;
-attrs.glyph_orientation_horizontal = attrs._default;
-attrs.glyph_orientation_vertical = attrs._default;
-attrs.glyphRef = attrs._default;
-attrs.gradientTransform = attrs._default;
-attrs.gradientUnits = attrs._default;
+attrs.g1 = {name = 'g1', parser = default};
+attrs.g2 = {name = 'g2', parser = default};
+attrs.glyph_name = {name = 'glyph-name', parser = default};
+attrs.glyph_orientation_horizontal = {name = 'glyph-orinentation-horizontal', parser = default};
+attrs.glyph_orientation_vertical = {name = 'glyph-orientation-vertical', parser = default};
+attrs.glyphRef = {name = 'glyphRef', parser = default};
+attrs.gradientTransform = {name = 'gradientTransform', parser = default};
+attrs.gradientUnits = {name = 'gradientUnits', parser = default};
 
-attrs.hanging = attrs._default;
-attrs.height = length;
-attrs.horiz_adv_x = attrs._default;
-attrs.horiz_origin_x = attrs._default;
-attrs['horiz-origin-x'] = attrs._default;
+attrs.hanging = {name ='hanging', parser=number};
+attrs.height = {name = 'height', parser=length};
+attrs.horiz_adv_x = {name = 'horiz-adv-x', parser = default};
+attrs.horiz_origin_x = {name = 'horiz-origin-x', parser = default};
+attrs['horiz-origin-x'] = attrs.horiz_origin_x;
 
-attrs.id = attrs._default;
-attrs.ideographic = attrs._default;
-attrs.image_rendering = attrs._default;
-attrs['in'] = attrs._default;
-attrs.in2 = attrs._default;
-attrs.intercept = attrs._default;
+attrs.id = {name = 'id', parser = default};
+attrs.ideographic = {name = 'ideographic', parser = default};
+attrs.image_rendering = {name = 'image-rendering', parser = default};
+attrs['in'] = {name = 'in', parser = default};
+attrs.in2 = {name = 'in2', parser = default};
+attrs.intercept = {name = 'intercept', parser = default};
 
-attrs.k = attrs._default;
-attrs.k1 = attrs._default;
-attrs.k2 = attrs._default;
-attrs.k3 = attrs._default;
-attrs.k4 = attrs._default;
-attrs.kernelMatrix = attrs._default;
-attrs.kernelUnitLength = attrs._default;
-attrs.kerning = attrs._default;
-attrs.keyPoints = attrs._default;
-attrs.keySplines = attrs._default;
-attrs.keyTimes = attrs._default;
+attrs.k = {name = 'k', parser = number};
+attrs.k1 = {name = 'k1', parser = number};
+attrs.k2 = {name = 'k2', parser = number};
+attrs.k3 = {name = 'k3', parser = number};
+attrs.k4 = {name = 'k4', parser = number};
+attrs.kernelMatrix = {name = 'kernelMatrix', parser = default};
+attrs.kernelUnitLength = {name = 'kernelUnitLength', parser = default};
+attrs.kerning = {name = 'kerning', parser = default};
+attrs.keyPoints = {name = 'keyPoints', parser = default};
+attrs.keySplines = {name = 'keySplines', parser = default};
+attrs.keyTimes = {name = 'keyTimes', parser = default};
 
-attrs.lang = attrs._default;
-attrs.lengthAdjust = attrs._default;
-attrs.letter_spacing = attrs._default;
-attrs.lighting_color = attrs._default;
-attrs.limitingConeAngle = attrs._default;
-attrs['local'] = attrs._default;
+attrs.lang = {name = 'lang', parser = default};
+attrs.lengthAdjust = {name = 'lengthAdjust', parser = default};
+attrs.letter_spacing = {name = 'letter-spacing', parser = default};
+attrs.lighting_color = {name = 'lighting-color', parser = default};
+attrs.limitingConeAngle = {name = 'limitingConeAngle', parser = default};
+attrs['local'] = {name = 'local', parser = default};
 
-attrs.marker_end = attrs._default;
-attrs['marker-end'] = attrs._default;
-attrs.marker_mid = attrs._default;
-attrs['marker-mid'] = attrs._default;
-attrs.marker_start = attrs._default;
-attrs['marker-start'] = attrs._default;
-attrs.markerHeight = attrs._default;
-attrs.markerUnits = attrs._default;
-attrs.markerWidth = attrs._default;
-attrs.mask = attrs._default;
-attrs.maskContentUnits = attrs._default;
-attrs.maskUnits = attrs._default;
-attrs.mathematical = attrs._default;
-attrs.max = attrs._default;
-attrs.media = attrs._default;
-attrs.method = attrs._default;
-attrs.min = attrs._default;
-attrs.mode = attrs._default;
+attrs.marker_end = {name = 'marker-end', parser = default};
+attrs['marker-end'] = attrs.marker_end;
+attrs.marker_mid = {name = 'marker_mid', parser = default};
+attrs['marker-mid'] = attrs.marker_mid;
+attrs.marker_start = {name = 'marker_start', parser = default};
+attrs['marker-start'] = attrs.marker_start;
+attrs.markerHeight = {name = 'markerHeight', parser = default};
+attrs.markerUnits = {name = 'markerUnits', parser = default};
+attrs.markerWidth = {name = 'markerWidth', parser = default};
+attrs.mask = {name = 'mask', parser = default};
+attrs.maskContentUnits = {name = 'maskContentUnits', parser = default};
+attrs.maskUnits = {name = 'maskUnits', parser = default};
+attrs.mathematical = {name='mathematical', parser=number};
+attrs.max = {name = 'max', parser = default};
+attrs.media = {name = 'media', parser = default};
+attrs.method = {name = 'method', parser = default};
+attrs.min = {name = 'min', parser = default};
+attrs.mode = {name = 'mode', parser = default};
 
-attrs.name = attrs._default;
-attrs.numOctaves = attrs._default;
+attrs.name = {name = 'name', parser = default};
+attrs.numOctaves = {name = 'numOctaves', parser = default};
 
-attrs.offset = attrs._default;
-attrs.onabort = attrs._default;
-attrs.onactivate = attrs._default;
-attrs.onbegin = attrs._default;
-attrs.onclick = attrs._default;
-attrs.onend = attrs._default;
-attrs.onerror = attrs._default;
-attrs.onfocusin = attrs._default;
-attrs.onfocusout = attrs._default;
-attrs.onload = attrs._default;
-attrs.onmousedown = attrs._default;
-attrs.onmousemove = attrs._default;
-attrs.onmouseout = attrs._default;
-attrs.onmouseover = attrs._default;
-attrs.onmouseup = attrs._default;
-attrs.onrepeat = attrs._default;
-attrs.onresize = attrs._default;
-attrs.onscroll = attrs._default;
-attrs.onunload = attrs._default;
-attrs.onzoom = attrs._default;
-attrs.opacity = attrs._default;
-attrs.operator = attrs._default;
-attrs.order = attrs._default;
-attrs.orient = attrs._default;
-attrs.orientation = attrs._default;
-attrs.origin = attrs._default;
-attrs.overflow = attrs._default;
-attrs.overline_position = attrs._default;
-attrs['overline-position'] = attrs._default;
-attrs.overline_thickness = attrs._default;
-attrs['overline-thickness'] = attrs._default;
+attrs.offset = {name = 'offset', parser = default};
+attrs.onabort = {name = 'onabort', parser = default};
+attrs.onactivate = {name = 'onactivate', parser = default};
+attrs.onbegin = {name = 'onbegin', parser = default};
+attrs.onclick = {name = 'onclick', parser = default};
+attrs.onend = {name = 'onend', parser = default};
+attrs.onerror = {name = 'onerror', parser = default};
+attrs.onfocusin = {name = 'onfocusin', parser = default};
+attrs.onfocusout = {name = 'onfocusout', parser = default};
+attrs.onload = {name = 'onload', parser = default};
+attrs.onmousedown = {name = 'onmousedown', parser = default};
+attrs.onmousemove = {name = 'onmousemove', parser = default};
+attrs.onmouseout = {name = 'onmouseout', parser = default};
+attrs.onmouseover = {name = 'onmouseover', parser = default};
+attrs.onmouseup = {name = 'onmouseup', parser = default};
+attrs.onrepeat = {name = 'onrepeat', parser = default};
+attrs.onresize = {name = 'onresize', parser = default};
+attrs.onscroll = {name = 'onscroll', parser = default};
+attrs.onunload = {name = 'onunload', parser = default};
+attrs.onzoom = {name = 'onzoom', parser = default};
+attrs.opacity = {name = 'opacity', parser = default};
+attrs.operator = {name = 'operator', parser = default};
+attrs.order = {name = 'order', parser = default};
+attrs.orient = {name = 'orient', parser = default};
+attrs.orientation = {name = 'orientation', parser = default};
+attrs.origin = {name = 'origin', parser = default};
+attrs.overflow = {name = 'overflow', parser = default};
+attrs.overline_position = {name = 'overline-position', parser = number};
+attrs['overline-position'] = attrs.overline_position;
+attrs.overline_thickness = {name = 'overline-thickness', parser = number};
+attrs['overline-thickness'] = attrs.overline_thickness;
 
-attrs.panose_1 = attrs._default;
-attrs['panose-1'] = attrs._default;
-attrs.paint_order = attrs._default;
-attrs['paint-order'] = attrs._default;
-attrs.pathLength = attrs._default;
-attrs.patternContentUnits = attrs._default;
-attrs.patternTransform = attrs._default;
-attrs.patternUnits = attrs._default;
-attrs.pointer_events = attrs._default;
-attrs['pointer-events'] = attrs._default;
-attrs.points = attrs._default;
-attrs.pointsAtX = attrs._default;
-attrs.pointsAtY = attrs._default;
-attrs.pointsAtZ = attrs._default;
-attrs.preserveAlpha = attrs._default;
-attrs.preserveAspectRatio = attrs._default;
-attrs.primitiveUnits = attrs._default;
+attrs.panose_1 = {name = 'panose-1', parser = default};
+attrs['panose-1'] = attrs.panose_1;
+attrs.paint_order = {name = 'paint-order', parser = default};
+attrs['paint-order'] = attrs.paint_order;
+attrs.pathLength = {name = 'pathLength', parser = default};
+attrs.patternContentUnits = {name = 'patternContentUnits', parser = default};
+attrs.patternTransform = {name = 'patternTransform', parser = default};
+attrs.patternUnits = {name = 'patternUnits', parser = default};
+attrs.pointer_events = {name = 'pointer-events', parser = default};
+attrs['pointer-events'] = attrs.pointer_events;
+attrs.points = {name = 'points', parser = default};
+attrs.pointsAtX = {name = 'pointsAtX', parser = default};
+attrs.pointsAtY = {name = 'pointsAtY', parser = default};
+attrs.pointsAtZ = {name = 'pointsAtZ', parser = default};
+attrs.preserveAlpha = {name = 'preserveAlpha', parser = default};
+attrs.preserveAspectRatio = {name = 'preserveAspectRatio', parser = default};
+attrs.primitiveUnits = {name = 'primitiveUnits', parser = default};
 
-attrs.r = attrs._default;
-attrs.radius = attrs._default;
-attrs.refX = attrs._default;
-attrs.refY = attrs._default;
-attrs.rendering_intent = attrs._default;
-attrs['rendering-intent'] = attrs._default;
-attrs.repeatCount = attrs._default;
-attrs.repeatDur = attrs._default;
-attrs.requiredExtensions = attrs._default;
-attrs.requiredFeatures = attrs._default;
-attrs.restart = attrs._default;
-attrs.result = attrs._default;
-attrs.rotate = attrs._default;
-attrs.rx = length;
-attrs.ry = length;
+attrs.r = {name = 'r', parser = default};
+attrs.radius = {name = 'radius', parser = default};
+attrs.refX = {name = 'refX', parser = default};
+attrs.refY = {name = 'refY', parser = default};
+attrs.rendering_intent = {name = 'rendering-intent', parser = default};
+attrs['rendering-intent'] = attrs.rendering_intent;
+attrs.repeatCount = {name = 'repeatCount', parser = default};
+attrs.repeatDur = {name = 'repeatDur', parser = default};
+attrs.requiredExtensions = {name = 'requiredExtensions', parser = default};
+attrs.requiredFeatures = {name = 'requiredFeatures', parser = default};
+attrs.restart = {name = 'restart', parser = default};
+attrs.result = {name = 'result', parser = default};
+attrs.rotate = {name = 'rotate', parser = default};
+attrs.rx = {name='rx', parser=length};
+attrs.ry = {name='ry', parser=length};
 
-attrs.scale = attrs._default;
-attrs.seed = attrs._default;
-attrs.shape_rendering = attrs._default;
-attrs['shape-rendering'] = attrs._default;
-attrs.slope = attrs._default;
-attrs.spacing = attrs._default;
-attrs.specularConstant = attrs._default;
-attrs.specularExponent = attrs._default;
-attrs.speed = attrs._default;
-attrs.spreadMethod = attrs._default;
-attrs.startOffset = attrs._default;
-attrs.stdDeviation = attrs._default;
-attrs.stemh = attrs._default;
-attrs.stemv = attrs._default;
-attrs.stitchTiles = attrs._default;
+attrs.scale = {name = 'scale', parser = number};
+attrs.seed = {name = 'seed', parser = number};
+attrs.shape_rendering = {name = 'shape-rendering', parser = default};
+attrs['shape-rendering'] = attrs.shape_rendering;
+attrs.slope = {name='slope', parser=number};
+attrs.spacing = {name = 'spacing', parser = default};
+attrs.specularConstant = {name = 'specularConstant', parser = default};
+attrs.specularExponent = {name = 'specularExponent', parser = default};
+attrs.speed = {name = 'speed', parser = default};
+attrs.spreadMethod = {name = 'spreadMethod', parser = default};
+attrs.startOffset = {name = 'startOffset', parser = default};
+attrs.stdDeviation = {name = 'stdDeviation', parser = default};
+attrs.stemh = {name='stemh', parser = number};
+attrs.stemv = {name = 'stemv', parser=number};
+attrs.stitchTiles = {name = 'stitchTiles', parser = default};
+attrs.stop_color = {name='stop-color', parser=color};
 attrs['stop-color'] = color;
-attrs.stop_color = function(name, value, strict) return attrs['stop-color']('stop-color', value, strict); end
-attrs['stop-opacity'] = attrs._default;
-attrs.stop_opacity = attrs._default;
-attrs['strikethrough-position'] = attrs._default;
-attrs.strikethrough_position = attrs._default;
-attrs['strikethrough-thickness'] = attrs._default;
-attrs.strikethrough_thickness = attrs._default;
-attrs.string = attrs._default;
-attrs.stroke = paint;
-attrs.stroke_dasharray = attrs._default;
-attrs['stroke-dasharray'] = attrs._default;
-attrs.stroke_dashoffset = attrs._default;
-attrs['stroke-dashoffset'] = attrs._default;
-attrs.stroke_linecap = attrs._default;
-attrs['stroke-linecap'] = attrs._default;
-attrs.stroke_miterlimit = attrs._default;
-attrs['stroke-miterlimit'] = attrs._default;
-attrs.stroke_opacity = attrs._default;
-attrs['stroke-opacity'] = attrs._default;
-attrs.stroke_width = attrs._default;
-attrs['stroke-width'] = attrs._default;
-attrs.style = attrs._default;
-attrs.surfaceScale = attrs._default;
-attrs.systemLanguage = attrs._default;
+attrs.stop_opacity = {name = 'stop-opacity', parser = default};
+attrs['stop-opacity'] = attrs.stop_opacity;
+attrs.strikethrough_position = {name = 'strikethrough-position', parser = number};
+attrs['strikethrough-position'] = attrs.strikethrough_position;
+attrs.strikethrough_thickness = {name = 'strikethrough-thickness', parser = number};
+attrs['strikethrough-thickness'] = attrs.strikethrough_thickness;
+attrs.string = {name = 'string', parser = default};
+attrs.stroke = {name='stroke', parser=paint};
+attrs.stroke_dasharray = {name = 'stroke-dasharray', parser = default};
+attrs['stroke-dasharray'] = attrs.stroke_dasharray;
+attrs.stroke_dashoffset = {name = 'stroke-dashoffset', parser = default};
+attrs['stroke-dashoffset'] = attrs.stroke_dashoffset;
+attrs.stroke_linecap = {name = 'stroke-linecap', parser = default};
+attrs['stroke-linecap'] = attrs.stroke_linecap;
+attrs.stroke_miterlimit = {name = 'stroke-miterlimit', parser = default};
+attrs['stroke-miterlimit'] = attrs.stroke_miterlimit;
+attrs.stroke_opacity = {name = 'stroke-opacity', parser = default};
+attrs['stroke-opacity'] = attrs.stroke_opacity;
+attrs.stroke_width = {name = 'stroke-width', parser = length};
+attrs['stroke-width'] = attrs.stroke_width;
+attrs.style = {name = 'style', parser = default};
+attrs.surfaceScale = {name = 'surfaceScale', parser = default};
+attrs.systemLanguage = {name = 'systemLanguage', parser = default};
 
-attrs.tableValues = attrs._default;
-attrs.target = attrs._default;
-attrs.targetX = attrs._default;
-attrs.targetY = attrs._default;
-attrs.text_anchor = attrs._default;
-attrs['text-anchor'] = attrs._default;
-attrs.text_decoration = attrs._default;
-attrs['text-decoration'] = attrs._default;
-attrs.text_rendering = attrs._default;
-attrs['text-rendering'] = attrs._default;
-attrs.textLength = attrs._default;
-attrs.to = attrs._default;
-attrs.transform = attrs._default;
-attrs['type'] = attrs._default;
+attrs.tableValues = {name = 'tableValues', parser = default};
+attrs.target = {name = 'target', parser = default};
+attrs.targetX = {name = 'targetX', parser = default};
+attrs.targetY = {name = 'targetY', parser = default};
+attrs.text_anchor = {name = 'text-anchor', parser = default};
+attrs['text-anchor'] = attrs.text_anchor;
+attrs.text_decoration = {name = 'text-decoration', parser = default};
+attrs['text-decoration'] = attrs.text_decoration;
+attrs.text_rendering = {name = 'text-rendering', parser = default};
+attrs['text-rendering'] = attrs.text_rendering;
+attrs.textLength = {name = 'textLength', parser = default};
+attrs.to = {name = 'to', parser = default};
+attrs.transform = {name = 'transform', parser = default};
+attrs['type'] = {name = 'type', parser = default};
 
-attrs.u1 = attrs._default;
-attrs.u2 = attrs._default;
-attrs.underline_position = attrs._default;
-attrs['underline-position'] = attrs._default;
-attrs.underline_thickness = attrs._default;
-attrs['underline-thickness'] = attrs._default;
-attrs.unicode = attrs._default;
-attrs.unicode_bidi = attrs._default;
-attrs['unicode-bidi'] = attrs._default;
-attrs.unicode_range = attrs._default;
-attrs['unicode-range'] = attrs._default;
-attrs.units_per_em = attrs._default;
-attrs['units-per-em'] = attrs._default;
+attrs.u1 = {name = '', parser = default};
+attrs.u2 = {name = '', parser = default};
+attrs.underline_position = {name = 'underline-position', parser = number};
+attrs['underline-position'] = attrs.underline_position;
+attrs.underline_thickness = {name = 'underline-thickness', parser = number};
+attrs['underline-thickness'] = attrs.underline_thickness;
+attrs.unicode = {name = 'unicode', parser = default};
+attrs.unicode_bidi = {name = 'unicode-bidi', parser = default};
+attrs['unicode-bidi'] = attrs.unicode_bidi;
+attrs.unicode_range = {name = 'unicode-range', parser = default};
+attrs['unicode-range'] = attrs.unicode_range;
+attrs.units_per_em = {name = 'units-per-em', parser = number};
+attrs['units-per-em'] = attrs.units_per_em;
 
-attrs.v_alphabetic = attrs._default;
-attrs['v-alphabetic'] = attrs._default;
-attrs.v_hanging = attrs._default;
-attrs['v-hanging'] = attrs._default;
-attrs.v_ideographic = attrs._default;
-attrs['v-ideographic'] = attrs._default;
-attrs.v_mathematical = attrs._default;
-attrs['v-mathematical'] = attrs._default;
-attrs.values = attrs._default;
-attrs.version = attrs._default;
-attrs.vert_adv_y = attrs._default;
-attrs['vert-adv-y'] = attrs._default;
-attrs.vert_origin_x = attrs._default;
-attrs['vert-origin-x'] = attrs._default;
-attrs.vert_origin_y = attrs._default;
-attrs['vert-origin-y'] = attrs._default;
-attrs.viewBox = attrs._default;
-attrs.visibility = attrs._default;
+attrs.v_alphabetic = {name = 'v-alphabetic', parser = number};
+attrs['v-alphabetic'] = attrs.v_alphabetic;
+attrs.v_hanging = {name = 'v-hanging', parser = number};
+attrs['v-hanging'] = attrs.v_hanging;
+attrs.v_ideographic = {name = 'v-ideographic', parser = number};
+attrs['v-ideographic'] = attrs.v_ideographic;
+attrs.v_mathematical = {name = 'v-mathematical', parser = default};
+attrs['v-mathematical'] = attrs.v_mathematical;
+attrs.values = {name = 'values', parser = default};
+attrs.version = {name = 'version', parser = default};
+attrs.vert_adv_y = {name = 'v-adv-y', parser = default};
+attrs['vert-adv-y'] = attrs.vert_adv_y;
+attrs.vert_origin_x = {name = 'v-origin-x', parser = default};
+attrs['vert-origin-x'] = attrs.v_origin_x;
+attrs.vert_origin_y = {name = 'vert-origin-y', parser = default};
+attrs['vert-origin-y'] = attrs.vert_origin_y;
+attrs.viewBox = {name = 'viewBox', parser = viewBox};
+attrs.visibility = {name = 'visibility', parser = default};
 
-attrs.width = length;
-attrs.widths = attrs._default;
-attrs.word_spacing = attrs._default;
-attrs['word-spacing'] = attrs._default;
-attrs.writing_mode = attrs._default;
-attrs['writing-mode'] = attrs._default;
+attrs.width = {name = 'width', parser = length};
+attrs.widths = {name = 'widths', parser = default};
+attrs.word_spacing = {name = 'word-spacing', parser = default};
+attrs['word-spacing'] = attrs.word_spacing;
+attrs.writing_mode = {name = 'writing-mode', parser = default};
+attrs['writing-mode'] = attrs.writing_mode;
 
-attrs.x = coord;
-attrs['x-height'] = attrs._default;
-attrs.x_height = function(name, value, strict) return attrs['x-height'](name, value, strict); end
-attrs.x1 = coord;
-attrs.x2 = coord;
-attrs.xChannelSelector = attrs._default;
-attrs['xlink:actuate'] = attrs._default;
-attrs.xlink_actuate = attrs._default;
-attrs['xlink:arcrole'] = attrs._default;
-attrs.xlink_arcrole = attrs._default;
-attrs['xlink:href'] = attrs._default;
-attrs.xlink_href = attrs._default;
-attrs['xlink:role'] = attrs._default;
-attrs.xlink_role = attrs._default;
-attrs['xlink:show'] = attrs._default;
-attrs.xlink_show = attrs._default;
-attrs['xlink:title'] = attrs._default;
-attrs.xlink_title = attrs._default;
-attrs['xlink:type'] = attrs._default;
-attrs.xlink_type = attrs._default;
-attrs['xml:base'] = attrs._default;
-attrs.xml_base = attrs._default;
-attrs['xml:lang'] = attrs._default;
-attrs.xml_lang = attrs._default;
-attrs['xml:space'] = attrs._default;
-attrs.xml_space = attrs._default;
+attrs.x = {name='x', parser='coord'};
+attrs.x_height = {name='x-height', parser=number};
+attrs['x-height'] = attrs.x_height;
+attrs.x1 = {name='x1', parser=coord};
+attrs.x2 = {name='x2', parser=coord};
+attrs.xChannelSelector = {name = 'xChannelSelector', parser = default};
+attrs.xlink_actuate = {name = 'xlink:actuate', parser = default};
+attrs['xlink:actuate'] = attrs.xlink_actuate;
+attrs.xlink_arcrole = {name = 'xlink:arcrole', parser = default};
+attrs['xlink:arcrole'] = attrs.xlink_arcrole;
+attrs.xlink_href = {name='xlink:href', parser=default};
+attrs['xlink:href'] = attrs.xlink_href;
+attrs.xlink_role = {name = 'xlink:role', parser = default};
+attrs['xlink:role'] = attrs.xlink_role;
+attrs.xlink_show = {name = 'xlink:show', parser = default};
+attrs['xlink:show'] = attrs.xlink_show;
+attrs.xlink_title = {name = 'xlink:title', parser = default};
+attrs['xlink:title'] = attrs.xlink_title;
+attrs.xlink_type = {name = 'xlink:type', parser = default};
+attrs['xlink:type'] = attrs.xlink_type;
+attrs.xml_base = {name = 'xml:base', parser = default};
+attrs['xml:base'] = attrs.xml_base;
+attrs.xml_lang = {name = 'xml:lang', parser = default};
+attrs['xml:lang'] = attrs.xml_lang;
+attrs.xml_space = {name = 'xml:space', parser = default};
+attrs['xml:space'] = attrs.xml_space;
 
-attrs.y = coord;
-attrs.y1 = coord;
-attrs.y2 = coord;
-attrs.yChannelSelector = attrs._default;
+attrs.y = {name = 'y', parser = coord};
+attrs.y1 = {name = 'y1', parser = coord};
+attrs.y2 = {name = 'y2', parser = coord};
+attrs.yChannelSelector = {name = 'yChannelSelector', parser = default};
 
-attrs.z = attrs._default;
-attrs.zoomAndPan = attrs._default;
+attrs.z = {name = 'z', parser = coord};
+attrs.zoomAndPan = {name = 'zoomAndPan', parser = default};
 
 
 function attrs.parseAttribute(name, value, strict)
@@ -448,7 +494,7 @@ function attrs.parseAttribute(name, value, strict)
 		end
 	end
 
-	return func(name, value, strict)
+	return func.parser(func.name, value, strict)
 end
 
 return attrs;

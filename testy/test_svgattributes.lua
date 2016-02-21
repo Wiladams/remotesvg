@@ -22,16 +22,26 @@ local function test_rect()
 end
 
 function test_coord()
-	local name, num, units = parse('cx', "100%")
-	print("cx='100%' ",num, units)
+	local function printcoord(str)
+		local name, v = parse('cx', str)
+		print(name, str, v.value, v.units, v)
+	end
 
-	local name, num, units = parse('cx', "75")
-	print("cx='75' ",num, units)
-
-	local name, num, units = parse('cx', "12cm")
-	print("cx='12cm' ",num, units)
+	printcoord('100%')
+	printcoord('75')
+	printcoord('12cm')
 
 end
 
-test_coord()
+function test_viewbox()
+	local vbox = parse("viewBox", "0 50 10 100")
+	print(vbox)
+
+	local vbox = parse("viewBox", "20, 30, 100, 200")
+	print(vbox)
+
+end
+
+--test_coord()
 --test_rect();
+test_viewbox();
