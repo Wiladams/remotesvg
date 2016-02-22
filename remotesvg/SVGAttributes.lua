@@ -548,6 +548,7 @@ function attrs.parseAttribute(name, value, strict)
 		if not strict then
 			-- Be permissive, if the name is not found,
 			-- just return what was passed in
+			--print("attrs.parseAttribute, NOFUNC: ", name, value)
 			return name, value;
 		else
 			-- If we're being strict, then we don't 

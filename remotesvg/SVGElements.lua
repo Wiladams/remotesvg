@@ -138,7 +138,8 @@ end
 function BasicElem.parseAttributes(self, strict)
 	local newVals = {}
 	for name, value in pairs(self) do
-		if type(name) ~= number then
+		--print("BasicElem.parseAttributes: ", name, type(name), value)
+		if type(name) ~= "number" then
 			if name ~= "_kind" then
 				local n, val = SVGAttributes.parseAttribute(name, value, strict)
 				if n ~= name then
@@ -167,6 +168,7 @@ function BasicElem.write(self, strm)
 	local childcount = 0;
 
 	for name, value in pairs(self) do
+		print("BasicElem.write (pairs): ", name, value)
 		if type(name) == "number" then
 			childcount = childcount + 1;
 		else
