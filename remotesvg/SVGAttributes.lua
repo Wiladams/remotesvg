@@ -4,6 +4,10 @@
 --
 local colors = require("remotesvg.colors")
 local RGB = colors.RGBA;
+local maths = require("remotesvg.maths")
+local clamp = maths.clamp;
+local bit = require("bit")
+local lshift, rshift, band, bor = bit.lshift, bit.rshift, bit.band, bit.bor
 
 local tonumber = tonumber;
 local tostring = tostring;
@@ -15,10 +19,10 @@ local function color(name, value, strict)
 		return colors.svg[name] or RGB(128, 128, 128);
 	end
 	
-	local function parseColorHex(self, s)
+	local function parseColorHex(s)
 		--print(".parseColorHex: ", s)
 
-		local rgb = s:match("#(%g+)")
+		local rgb = s:match("#(%x+)")
 		--print("rgb: ", rgb)
 		local r,g,b = 0,0,0;
 		local c = 0;
@@ -38,10 +42,32 @@ local function color(name, value, strict)
 		return RGB(r,g,b);
 	end
 
+	local function parseColorRGB(str)
+		-- if numberpatt uses %x instead of %d, then do the following
+		-- to get past the 'b' in 'rgb('
+		--local loc = str:find("%(")
+		--str = str:sub(loc+1,#str)
+		local numberpatt = "(%d+)"
+		local usePercent = str:find("%%")
+
+		--print("parseColorRGB: ", str, usePercent)
+
+		local tbl = {}
+		for num in str:gmatch(numberpatt) do
+			if usePercent then
+				table.insert(tbl, tonumber(num)*255/100)
+			else
+				table.insert(tbl, tonumber(num))
+			end
+		end
+
+		return RGB(tbl[1], tbl[2], tbl[3])
+	end
+
 	local str = value:match("%s*(.*)")
 	local len = #str;
 	
-	--	print("SVGParser.parseColor: ", str, len)
+	--print("parseColor: ", str)
 	if len >= 1 and str:sub(1,1) == '#' then
 		value = parseColorHex(str);
 	elseif (len >= 4 and str:match("rgb%(")) then
@@ -50,7 +76,16 @@ local function color(name, value, strict)
 		value = parseColorName(str);
 	end
 
-	return name, value
+	local r, g, b, a = colors.colorComponents(value)
+	--print("COLOR: ", r,g,b,a)
+	local obj = {r=r, g = g, b = b, a = a};
+	setmetatable(obj, {
+		__tostring = function(self)
+			return string.format("rgb(%d, %d, %d)", self.r, self.g, self.b)
+		end
+	})
+	
+	return name, obj
 end
 local paint = color;
 
@@ -83,6 +118,30 @@ local function number(name, value, strict)
 	end
 
 	return name, tonumber(value)
+end
+
+-- strictly, the SVG spec say opacity is simply 
+-- a number between 0..1
+-- but, we'll allow specifying a '%' value as well...
+
+function opacity(name, value, strict)
+	if type(value) ~= "string" then
+		return name, value;
+	end
+
+	local usePercent = value:find("%%")
+	local num = 1.0
+	tonumber(value)
+	if usePercent then
+		local str = value:match("(%d+)")
+		num = tonumber(str) / 100;
+	else
+		num = tonumber(value);
+	end
+
+	local val = clamp(tonumber(value), 0, 1);
+
+	return val;
 end
 
 local function viewBox(name, value, strict)
@@ -164,7 +223,7 @@ attrs.clip = {name = 'clip', parser = default};
 attrs.clipPathUnits = {name = 'clipPathUnits', parser = default};
 attrs.clip_path = {name = 'clip-path', parser = default};
 attrs.clip_rule = {name = 'clip-rule', parser = default};
-attrs.color = {name = 'color', parser = default};
+attrs.color = {name = 'color', parser = color};
 attrs.color_interpolation = {name = 'color-interpolation', parser = default};
 attrs.color_interpolation_filters = {name = 'color-interpolation-filters', parser = default};
 attrs.color_profile = {name = 'profile', parser = default};
@@ -196,7 +255,7 @@ attrs.exponent = {name = 'exponent', parser = default};
 attrs.externalResourcesRequired = {name = 'externalResourcesRequired', parser = default};
 
 attrs.fill = {name='fill', parser = paint};
-attrs.fill_opacity = {name = 'fill-opacity', parser = default};
+attrs.fill_opacity = {name = 'fill-opacity', parser = opacity};
 attrs['fill-opacity'] = attrs.fill_opacity;
 attrs.fill_rule = {name = 'fill-rule', parser = default};
 attrs['fill-rule'] = attrs.fill_rule;
@@ -205,9 +264,10 @@ attrs.filterRes = {name = 'filterRes', parser = default};
 attrs.filterUnits = {name = 'filterUnits', parser = default};
 attrs.flood_color = {name='flood-color', parser =color};
 attrs['flood-color'] = attrs.flood_color;
-attrs.flood_opacity = {name = 'flood-opacity', parser = default};
+attrs.flood_opacity = {name = 'flood-opacity', parser = opacity};
 attrs.font_family = {name = 'font-family', parser = default};
 attrs.font_size = {name = 'font-size', parser = default};
+attrs['font-size'] = attrs.font_size;
 attrs.font_size_adjust = {name = 'font-size-adjust', parser = default};
 attrs.font_stretch = {name = 'font-stretch', parser = default};
 attrs.font_style = {name = 'font-style', parser = default};
@@ -255,7 +315,8 @@ attrs.keyTimes = {name = 'keyTimes', parser = default};
 attrs.lang = {name = 'lang', parser = default};
 attrs.lengthAdjust = {name = 'lengthAdjust', parser = default};
 attrs.letter_spacing = {name = 'letter-spacing', parser = default};
-attrs.lighting_color = {name = 'lighting-color', parser = default};
+attrs.lighting_color = {name = 'lighting-color', parser = color};
+attrs['lighting-color'] = attrs.lighting_color;
 attrs.limitingConeAngle = {name = 'limitingConeAngle', parser = default};
 attrs['local'] = {name = 'local', parser = default};
 
@@ -301,7 +362,7 @@ attrs.onresize = {name = 'onresize', parser = default};
 attrs.onscroll = {name = 'onscroll', parser = default};
 attrs.onunload = {name = 'onunload', parser = default};
 attrs.onzoom = {name = 'onzoom', parser = default};
-attrs.opacity = {name = 'opacity', parser = default};
+attrs.opacity = {name = 'opacity', parser = opacity};
 attrs.operator = {name = 'operator', parser = default};
 attrs.order = {name = 'order', parser = default};
 attrs.orient = {name = 'orient', parser = default};
@@ -364,7 +425,7 @@ attrs.stemv = {name = 'stemv', parser=number};
 attrs.stitchTiles = {name = 'stitchTiles', parser = default};
 attrs.stop_color = {name='stop-color', parser=color};
 attrs['stop-color'] = color;
-attrs.stop_opacity = {name = 'stop-opacity', parser = default};
+attrs.stop_opacity = {name = 'stop-opacity', parser = opacity};
 attrs['stop-opacity'] = attrs.stop_opacity;
 attrs.strikethrough_position = {name = 'strikethrough-position', parser = number};
 attrs['strikethrough-position'] = attrs.strikethrough_position;
@@ -380,7 +441,7 @@ attrs.stroke_linecap = {name = 'stroke-linecap', parser = default};
 attrs['stroke-linecap'] = attrs.stroke_linecap;
 attrs.stroke_miterlimit = {name = 'stroke-miterlimit', parser = default};
 attrs['stroke-miterlimit'] = attrs.stroke_miterlimit;
-attrs.stroke_opacity = {name = 'stroke-opacity', parser = default};
+attrs.stroke_opacity = {name = 'stroke-opacity', parser = opacity};
 attrs['stroke-opacity'] = attrs.stroke_opacity;
 attrs.stroke_width = {name = 'stroke-width', parser = length};
 attrs['stroke-width'] = attrs.stroke_width;
@@ -443,7 +504,7 @@ attrs['word-spacing'] = attrs.word_spacing;
 attrs.writing_mode = {name = 'writing-mode', parser = default};
 attrs['writing-mode'] = attrs.writing_mode;
 
-attrs.x = {name='x', parser='coord'};
+attrs.x = {name='x', parser=coord};
 attrs.x_height = {name='x-height', parser=number};
 attrs['x-height'] = attrs.x_height;
 attrs.x1 = {name='x1', parser=coord};
@@ -480,6 +541,7 @@ attrs.zoomAndPan = {name = 'zoomAndPan', parser = default};
 
 
 function attrs.parseAttribute(name, value, strict)
+	--print("parseAttribute: ", name, value)
 	local func = attrs[name];
 
 	if not func then
@@ -494,6 +556,7 @@ function attrs.parseAttribute(name, value, strict)
 		end
 	end
 
+--print("parseAttribute (func.name, func.parser): ", func.name, func.parser)
 	return func.parser(func.name, value, strict)
 end
 

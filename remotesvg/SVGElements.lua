@@ -139,13 +139,15 @@ function BasicElem.parseAttributes(self, strict)
 	local newVals = {}
 	for name, value in pairs(self) do
 		if type(name) ~= number then
-			local n, val = SVGAttributes.parseAttribute(name, value, strict)
-			if n ~= name then
-				self[name] = nil;
-			end
+			if name ~= "_kind" then
+				local n, val = SVGAttributes.parseAttribute(name, value, strict)
+				if n ~= name then
+					self[name] = nil;
+				end
 			
-			if n then
-				self[n] = val;
+				if n then
+					self[n] = val;
+				end
 			end
 		end
 	end

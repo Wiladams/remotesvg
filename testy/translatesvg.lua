@@ -25,6 +25,7 @@ local filename = arg[1]
 if not filename then return end
 
 local doc = parser:parseFile(filename);
+doc:parseAttributes();
 
 -- generate the svg and write to stdout
 local FileStream = require("remotesvg.filestream")

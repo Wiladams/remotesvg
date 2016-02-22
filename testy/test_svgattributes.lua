@@ -2,6 +2,7 @@ package.path = "../?.lua;"..package.path
 
 local sattr = require("remotesvg.SVGAttributes")
 local parse = sattr.parseAttribute;
+local matrix2D = require("remotesvg.matrix2D")
 
 local svg = require("remotesvg.SVGElements")
 
@@ -19,6 +20,19 @@ local function test_rect()
 		print(k, v, type(v))
 	end
 
+end
+
+function test_color()
+	local function printcolor(value)
+		local name, num = parse("color", value)
+		print("color - ", value, num)
+	end
+
+	printcolor("red")
+	printcolor("#888888")
+	printcolor("#CCC")
+	printcolor("rgb(255, 0, 0)")
+	printcolor("rgb(50%, 25%, 100%)")
 end
 
 function test_coord()
@@ -42,6 +56,13 @@ function test_viewbox()
 
 end
 
+function test_matrix()
+	local m = matrix2D.translation(20,30)
+	print(m)
+end
+
+test_color();
 --test_coord()
+--test_matrix();
 --test_rect();
-test_viewbox();
+--test_viewbox();
