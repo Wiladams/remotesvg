@@ -44,6 +44,7 @@ function test_coord()
 	printcoord('100%')
 	printcoord('75')
 	printcoord('12cm')
+	printcoord('-306in')
 
 end
 
@@ -61,8 +62,8 @@ function test_matrix()
 	print(m)
 end
 
-test_color();
---test_coord()
+--test_color();
+test_coord()
 --test_matrix();
 --test_rect();
 --test_viewbox();

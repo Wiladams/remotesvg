@@ -91,17 +91,22 @@ local paint = color;
 
 
 local function coord(name, value, strict)
+	--print("coord: ", name, value)
+
 	if type(value) ~= "string" then
 		return name, value;
 	end
 
-	local num, units = value:match("(%d*%.?%d*)(.*)")
+	local num, units = value:match("(%-?%d*%.?%d*)(%g*)")
+
+	--print("coord: ", name, value, num, units)
 
 	if not num then return nil; end
 
 	local obj = {value = tonumber(num), units = units}
 	setmetatable(obj,{
 		__tostring = function(self)
+			--print("coord.tostring: ", self.value, self.units)
 			return string.format("%d%s",self.value, self.units or "")
 		end,
 	})

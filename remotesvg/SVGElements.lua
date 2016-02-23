@@ -168,7 +168,7 @@ function BasicElem.write(self, strm)
 	local childcount = 0;
 
 	for name, value in pairs(self) do
-		print("BasicElem.write (pairs): ", name, value)
+		--print("\nBasicElem.write (pairs): ", name, value)
 		if type(name) == "number" then
 			childcount = childcount + 1;
 		else
