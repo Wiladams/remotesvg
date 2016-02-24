@@ -162,6 +162,42 @@ function BasicElem.parseAttributes(self, strict)
 	end
 end
 
+-- Select all elements which are children recursively
+function BasicElem.selectAll(self)
+
+  	local function yieldChildren(parent)
+  		if type(parent) ~= "table" then
+  			return nil;
+  		end
+
+    	for idx, value in ipairs(parent) do
+			coroutine.yield(idx,value)
+	  		yieldChildren(value)      
+    	end
+  	end
+
+  	return coroutine.wrap(function() yieldChildren(self) end)
+end
+
+function BasicElem.selectMatches(self, predicate)
+	local function yieldMatches(parent)
+		for idx, value in ipairs(parent) do
+			if predicate then
+				if predicate(value) then
+					coroutine.yield(value)
+				end
+			else
+				coroutine.yield(value)
+			end
+			if type(value) == "table" then
+				yieldMatches(value)
+			end
+		end
+	end
+
+  	return coroutine.wrap(function() yieldMatches(self) end)	
+end
+
 function BasicElem.write(self, strm)
 	strm:openElement(self._kind);
 
