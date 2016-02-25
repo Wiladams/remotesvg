@@ -133,23 +133,32 @@ function BasicElem.append(self, name)
 	return child;
 end
 
+function BasicElem.attributes(self)
+	local function yieldAttributes(parent)
+		for name, value in pairs(parent) do
+			if type(name) ~= "number" and name ~= "_kind" then
+				coroutine.yield(name, value)
+			end
+		end
+	end
+
+  	return coroutine.wrap(function() yieldAttributes(self) end)	
+end
+
 -- go through each attribute parsing it
 -- to get a native lua form
 function BasicElem.parseAttributes(self, strict)
 	local newVals = {}
-	for name, value in pairs(self) do
+	--for name, value in pairs(self) do
+	for name, value in self:attributes() do
 		--print("BasicElem.parseAttributes: ", name, type(name), value)
-		if type(name) ~= "number" then
-			if name ~= "_kind" then
-				local n, val = SVGAttributes.parseAttribute(name, value, strict)
-				if n ~= name then
-					self[name] = nil;
-				end
+		local n, val = SVGAttributes.parseAttribute(name, value, strict)
+		if n ~= name then
+			self[name] = nil;
+		end
 			
-				if n then
-					self[n] = val;
-				end
-			end
+		if n then
+			self[n] = val;
 		end
 	end
 
@@ -162,25 +171,15 @@ function BasicElem.parseAttributes(self, strict)
 	end
 end
 
--- Select all elements which are children recursively
-function BasicElem.selectAll(self)
 
-  	local function yieldChildren(parent)
-  		if type(parent) ~= "table" then
-  			return nil;
-  		end
-
-    	for idx, value in ipairs(parent) do
-			coroutine.yield(idx,value)
-	  		yieldChildren(value)      
-    	end
-  	end
-
-  	return coroutine.wrap(function() yieldChildren(self) end)
-end
-
-function BasicElem.selectMatches(self, predicate)
-	local function yieldMatches(parent)
+--[[
+	Traverse the elements in document order, returning
+	the ones that match a given predicate.
+	If no predicate is supplied, then return all the
+	elements.
+--]]
+function BasicElem.selectElementMatches(self, pred)
+	local function yieldMatches(parent, predicate)
 		for idx, value in ipairs(parent) do
 			if predicate then
 				if predicate(value) then
@@ -189,13 +188,33 @@ function BasicElem.selectMatches(self, predicate)
 			else
 				coroutine.yield(value)
 			end
+
 			if type(value) == "table" then
-				yieldMatches(value)
+				yieldMatches(value, predicate)
 			end
 		end
 	end
 
-  	return coroutine.wrap(function() yieldMatches(self) end)	
+  	return coroutine.wrap(function() yieldMatches(self, pred) end)	
+end
+
+-- A convenient shorthand for selecting all the elements
+-- in the document.  No predicate is specified.
+function BasicElem.selectAll(self)
+	return self:selectElementMatches()
+end
+
+function BasicElem.getElementById(self, id)
+    local function filterById(entry)
+        print("filterById: ", entry.id, id)
+        if entry.id == id then
+            return true;
+        end
+    end
+
+    for child in self:selectMatches(filterById) do
+        return child;
+    end
 end
 
 function BasicElem.write(self, strm)
