@@ -12,6 +12,11 @@ local tbl = {
 		followed by more text
 	]];
 
+	function()
+		print("this is a test")
+	end,
+	
+
 	name4 = "value4";
 }
 

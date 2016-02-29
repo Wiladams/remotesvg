@@ -12,6 +12,19 @@ local lshift, rshift, band, bor = bit.lshift, bit.rshift, bit.band, bit.bor
 local tonumber = tonumber;
 local tostring = tostring;
 
+-- Individual functions which deal with specific
+-- attributes
+local attrs = {}
+
+-- This is the function to be used when we don't have 
+-- any specific specialization for an attribute
+function default(name, value, strict)
+--print("{name = '', parser = default}: ", name, value);
+
+	return name, value
+end
+
+
 -- These functions convert from SVG Attribute string values
 -- to lua specific types
 local function color(name, value, strict)
@@ -129,7 +142,7 @@ end
 -- a number between 0..1
 -- but, we'll allow specifying a '%' value as well...
 
-function opacity(name, value, strict)
+function numberorpercent(name, value, strict)
 	if type(value) ~= "string" then
 		return name, value;
 	end
@@ -146,7 +159,34 @@ function opacity(name, value, strict)
 
 	local val = clamp(tonumber(value), 0, 1);
 
-	return val;
+	return name, val;
+end
+local offset = opacity;
+local opacity = numberorpercent;
+
+local function parseStyle(name, value, strict)
+	local tbl = {}
+
+	for item in value:gmatch("([^;]+)") do
+		local name, value = item:match("(%g+):(%g+)")
+		--print("item:match: ", name, value)
+		name, value = attrs.parseAttribute(name, value, strict)
+		--print("parse result: ", name, value)
+		tbl[name] = value;
+	end
+
+	setmetatable(tbl, {
+		__tostring = function(self)
+			local res = {}
+			for name, value in pairs(self) do
+				table.insert(res, string.format("%s:%s", name, tostring(value)))
+			end
+
+			return table.concat(res,';')
+		end,
+	})
+	
+	return name, tbl
 end
 
 local function viewBox(name, value, strict)
@@ -176,7 +216,7 @@ local function viewBox(name, value, strict)
 		end,
 	})
 	
-	return obj;
+	return name, obj;
 end
 
 
@@ -185,17 +225,7 @@ end
 
 
 
--- Individual functions which deal with specific
--- attributes
-local attrs = {}
 
--- This is the function to be used when we don't have 
--- any specific specialization for an attribute
-function default(name, value, strict)
---print("{name = '', parser = default}: ", name, value);
-
-	return name, value
-end
 
 
 attrs.accent_height = {name = 'accent-height', parser = number};
@@ -347,7 +377,7 @@ attrs.mode = {name = 'mode', parser = default};
 attrs.name = {name = 'name', parser = default};
 attrs.numOctaves = {name = 'numOctaves', parser = default};
 
-attrs.offset = {name = 'offset', parser = default};
+attrs.offset = {name = 'offset', parser = numberorpercent};
 attrs.onabort = {name = 'onabort', parser = default};
 attrs.onactivate = {name = 'onactivate', parser = default};
 attrs.onbegin = {name = 'onbegin', parser = default};
@@ -429,7 +459,7 @@ attrs.stemh = {name='stemh', parser = number};
 attrs.stemv = {name = 'stemv', parser=number};
 attrs.stitchTiles = {name = 'stitchTiles', parser = default};
 attrs.stop_color = {name='stop-color', parser=color};
-attrs['stop-color'] = color;
+attrs['stop-color'] = attrs.stop_color;
 attrs.stop_opacity = {name = 'stop-opacity', parser = opacity};
 attrs['stop-opacity'] = attrs.stop_opacity;
 attrs.strikethrough_position = {name = 'strikethrough-position', parser = number};
@@ -450,7 +480,7 @@ attrs.stroke_opacity = {name = 'stroke-opacity', parser = opacity};
 attrs['stroke-opacity'] = attrs.stroke_opacity;
 attrs.stroke_width = {name = 'stroke-width', parser = length};
 attrs['stroke-width'] = attrs.stroke_width;
-attrs.style = {name = 'style', parser = default};
+attrs.style = {name = 'style', parser = parseStyle};
 attrs.surfaceScale = {name = 'surfaceScale', parser = default};
 attrs.systemLanguage = {name = 'systemLanguage', parser = default};
 
@@ -546,7 +576,7 @@ attrs.zoomAndPan = {name = 'zoomAndPan', parser = default};
 
 
 function attrs.parseAttribute(name, value, strict)
-	--print("parseAttribute: ", name, value)
+	print("parseAttribute: ", name, value)
 	local func = attrs[name];
 
 	if not func then

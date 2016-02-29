@@ -48,11 +48,17 @@ function test_coord()
 
 end
 
+function test_style()
+	local style = 'stop-color:#191b21;stop-opacity:0.34437087;'
+	local name, value = parse("style", style)
+	print("STYLE: ", name, value);
+end
+
 function test_viewbox()
-	local vbox = parse("viewBox", "0 50 10 100")
+	local name, vbox = parse("viewBox", "0 50 10 100")
 	print(vbox)
 
-	local vbox = parse("viewBox", "20, 30, 100, 200")
+	local name, vbox = parse("viewBox", "20, 30, 100, 200")
 	print(vbox)
 
 end
@@ -63,7 +69,8 @@ function test_matrix()
 end
 
 --test_color();
-test_coord()
+--test_coord()
 --test_matrix();
 --test_rect();
+test_style();
 --test_viewbox();
