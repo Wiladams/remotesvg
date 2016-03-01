@@ -1,6 +1,14 @@
 local ffi = require ("ffi")
 
-local tan, cos, sin = math.tan, math.cos, math.sin
+local RAD = math.rad
+local mtan = math.tan;
+local mcos = math.cos;
+local msin = math.sin;
+
+local tan = function(d) return mtan(RAD(d)) end 
+local cos = function(d) return mcos(RAD(d)) end 
+local sin = function(d) return msin(RAD(d)) end
+
 
 local matrix2D = {}
 setmetatable(matrix2D, {
@@ -47,6 +55,8 @@ end
 	translation 
 --]]
 function matrix2D.translation(tx, ty)
+	tx = tx or 0
+	ty = ty or 0
 	return matrix2D(1, 0, 0, 1, tx, ty)
 end
 
@@ -61,10 +71,12 @@ function matrix2D.scale(sx, sy)
 end
 
 function matrix2D.skewX(a)
+	a = a or 0
 	return matrix2D(1, 0, tan(a), 1, 0, 0)
 end
 
 function matrix2D.skewY(a)
+	a = a or 0
 	return matrix2D(1, tan(a), 0, 1, 0, 0)
 end
 
@@ -79,6 +91,7 @@ function matrix2D.rotation(a, x, y)
 	return matrix2D(cs, sn, -sn, cs, 0, 0)
 end
 
+-- BUGBUG - need to convert to 1 based index
 function matrix2D.xformMultiply(t, s)
 
 	local t0 = t[0] * s[0] + t[1] * s[2];
