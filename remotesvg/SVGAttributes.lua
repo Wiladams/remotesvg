@@ -110,7 +110,7 @@ local function coord(name, value, strict)
 		return name, value;
 	end
 
-	local num, units = value:match("(%-?%d*%.?%d*)(%g*)")
+	local num, units = value:match("([+-]?%d*%.?%d*)(%g*)")
 
 	--print("coord: ", name, value, num, units)
 
@@ -120,7 +120,7 @@ local function coord(name, value, strict)
 	setmetatable(obj,{
 		__tostring = function(self)
 			--print("coord.tostring: ", self.value, self.units)
-			return string.format("%d%s",self.value, self.units or "")
+			return string.format("%f%s",self.value, self.units or "")
 		end,
 	})
 
@@ -189,7 +189,7 @@ local function parseStyle(name, value, strict)
 	return name, tbl
 end
 
-local function viewBox(name, value, strict)
+local function parseviewBox(name, value, strict)
 	if type(value) ~= "string" then
 		return name, value
 	end
@@ -211,7 +211,7 @@ local function viewBox(name, value, strict)
 	
 	setmetatable(obj, {
 		__tostring = function(self)
-			return string.format("%d %d %d %d", 
+			return string.format("%f %f %f %f", 
 				self.min_x, self.min_y, self.width, self.height);
 		end,
 	})
@@ -226,7 +226,9 @@ end
 
 
 
-
+--[[
+	Entries for parsers per attribute
+--]]
 
 attrs.accent_height = {name = 'accent-height', parser = number};
 attrs.accumulate = {name = 'accumulate', pardser = default};	-- 'none' | 'sum'
@@ -529,7 +531,7 @@ attrs.vert_origin_x = {name = 'v-origin-x', parser = default};
 attrs['vert-origin-x'] = attrs.v_origin_x;
 attrs.vert_origin_y = {name = 'vert-origin-y', parser = default};
 attrs['vert-origin-y'] = attrs.vert_origin_y;
-attrs.viewBox = {name = 'viewBox', parser = viewBox};
+attrs.viewBox = {name = 'viewBox', parser = parseviewBox};
 attrs.visibility = {name = 'visibility', parser = default};
 
 attrs.width = {name = 'width', parser = length};

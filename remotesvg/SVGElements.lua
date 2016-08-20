@@ -244,6 +244,7 @@ function BasicElem.write(self, strm)
 		for idx, value in ipairs(self) do
 			if type(value) == "table" then
 				value:write(strm);
+			elseif type(value) == "function" then
 			else
 				-- write out pure text nodes
 				strm:write(tostring(value));
