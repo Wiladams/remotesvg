@@ -1,6 +1,6 @@
 local bit = require("bit")
 local band, bor, lshift, rshift = bit.band, bit.bor, bit.lshift, bit.rshift
-local maths = require("ljgraph2D.maths");
+local maths = require("remotesvg.maths");
 local clamp = maths.clamp
 
 -- The actual layout in memory is:
@@ -10,7 +10,9 @@ local clamp = maths.clamp
 -- they should take care of this difference
 local function RGBA(r, g, b, a)
 	a = a or 255;
-	return bor(lshift(tonumber(a),24), lshift(tonumber(r),16), lshift(tonumber(g),8), tonumber(b))
+	local num = tonumber(bor(lshift(tonumber(a),24), lshift(tonumber(r),16), lshift(tonumber(g),8), tonumber(b)))
+
+	return num;
 end
 
 local function colorComponents(c)

@@ -19,10 +19,6 @@ local vecang = maths.vecang;
 local vmag = maths.vmag;
 
 
---local SVGPath = require("ljgraph2D.SVGPath")
---local SVGShape = require("ljgraph2D.SVGShape")
---local SVGImage = require("ljgraph2D.SVGImage")
-
 local sqrt = math.sqrt;
 local fabs = math.abs;
 local abs = math.abs;

@@ -12,13 +12,22 @@ local tbl = {
 		followed by more text
 	]];
 
+	function()
+		print("this is a test")
+	end,
+	
+
 	name4 = "value4";
 }
 
+-- This one will print all the things in the table
+-- with the literals having a key type that is numeric
 for name, value in pairs(tbl) do
 	print(name, value);
 end
 
+-- This one will only print the literals, starting
+-- from an index of '1'
 for idx, value in ipairs(tbl) do
 	print(idx, value);
 end

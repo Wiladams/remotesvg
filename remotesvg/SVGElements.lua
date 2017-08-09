@@ -70,6 +70,8 @@ local attrNameAlias = {
 	xml_space = "xml:space",
 }
 
+local SVGAttributes = require("remotesvg.SVGAttributes")
+
 -- Given an attribute name, return the SVG name
 -- by looking up in alias table.
 local function realAttrName(name)
@@ -131,12 +133,97 @@ function BasicElem.append(self, name)
 	return child;
 end
 
+function BasicElem.attributes(self)
+	local function yieldAttributes(parent)
+		for name, value in pairs(parent) do
+			if type(name) ~= "number" and name ~= "_kind" then
+				coroutine.yield(name, value)
+			end
+		end
+	end
+
+  	return coroutine.wrap(function() yieldAttributes(self) end)	
+end
+
+-- go through each attribute parsing it
+-- to get a native lua form
+function BasicElem.parseAttributes(self, strict)
+	local newVals = {}
+	--for name, value in pairs(self) do
+	for name, value in self:attributes() do
+		--print("BasicElem.parseAttributes: ", name, type(name), value)
+		local n, val = SVGAttributes.parseAttribute(name, value, strict)
+		if n ~= name then
+			self[name] = nil;
+		end
+			
+		if n then
+			self[n] = val;
+		end
+	end
+
+	-- tell our children to parse their
+	-- attributes
+	for idx, value in ipairs(self) do
+		if type(value) == "table" then
+			value:parseAttributes(strict);
+		end
+	end
+end
+
+
+--[[
+	Traverse the elements in document order, returning
+	the ones that match a given predicate.
+	If no predicate is supplied, then return all the
+	elements.
+--]]
+function BasicElem.selectElementMatches(self, pred)
+	local function yieldMatches(parent, predicate)
+		for idx, value in ipairs(parent) do
+			if predicate then
+				if predicate(value) then
+					coroutine.yield(value)
+				end
+			else
+				coroutine.yield(value)
+			end
+
+			if type(value) == "table" then
+				yieldMatches(value, predicate)
+			end
+		end
+	end
+
+  	return coroutine.wrap(function() yieldMatches(self, pred) end)	
+end
+
+-- A convenient shorthand for selecting all the elements
+-- in the document.  No predicate is specified.
+function BasicElem.selectAll(self)
+	return self:selectElementMatches()
+end
+
+function BasicElem.getElementById(self, id)
+    local function filterById(entry)
+        print("filterById: ", entry.id, id)
+        if entry.id == id then
+            return true;
+        end
+    end
+
+    for child in self:selectMatches(filterById) do
+        return child;
+    end
+end
+
 function BasicElem.write(self, strm)
 	strm:openElement(self._kind);
 
 	local childcount = 0;
 
 	for name, value in pairs(self) do
+		--print("\nBasicElem.write (pairs): ", name, value)
 		if type(name) == "number" then
 			childcount = childcount + 1;
 		else
@@ -157,6 +244,7 @@ function BasicElem.write(self, strm)
 		for idx, value in ipairs(self) do
 			if type(value) == "table" then
 				value:write(strm);
+			elseif type(value) == "function" then
 			else
 				-- write out pure text nodes
 				strm:write(tostring(value));
